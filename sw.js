@@ -1,7 +1,7 @@
 const CACHE_NAME = 'tina-cache-v1';
 const urlsToCache = [
-  '/',
-  '/Tina2.html',
+  '/tina-assistant/Tina2.html',
+  '/tina-assistant/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
@@ -25,4 +25,5 @@ self.addEventListener('fetch', function(event) {
       }
     )
   );
+
 });
