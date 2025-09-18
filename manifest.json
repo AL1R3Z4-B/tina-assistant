@@ -2,7 +2,7 @@
   "name": "تینا - دستیار شهر کانیلا",
   "short_name": "تینا",
   "description": "دستیار مجازی شهر کانیلا در ماینکرافت",
-  "start_url": "/Tina2.html",
+  "start_url": "/tina-assistant/Tina2.html",
   "display": "standalone",
   "background_color": "#6a11cb",
   "theme_color": "#8a2be2",
