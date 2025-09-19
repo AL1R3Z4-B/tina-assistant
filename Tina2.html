@@ -1516,6 +1516,15 @@
             text-shadow: 0 0 5px rgba(0, 255, 157, 0.5);
         }
         
+        .status-offline {
+            background-color: #ff6b6b;
+            box-shadow: 0 0 8px #ff6b6b;
+        }
+
+        .status-text-offline {
+            color: #ff6b6b;
+        }
+        
         @media (max-width: 768px) {
             .message {
                 max-width: 90%;
@@ -2201,6 +2210,34 @@
         const animationsToggle = document.getElementById('animationsToggle');
         const autoSaveToggle = document.getElementById('autoSaveToggle');
         const botNameDisplay = document.getElementById('botNameDisplay');
+        const statusDot = document.querySelector('.status-dot');
+        const statusText = document.querySelector('.status span:nth-child(2)');
+
+        // تابع بررسی وضعیت اتصال
+        function updateConnectionStatus() {
+            if (navigator.onLine) {
+                statusDot.style.backgroundColor = '#4cd964';
+                statusDot.style.boxShadow = '0 0 8px #4cd964';
+                statusText.textContent = 'آنلاین';
+                statusText.style.color = '';
+                statusDot.classList.remove('status-offline');
+                statusText.classList.remove('status-text-offline');
+            } else {
+                statusDot.style.backgroundColor = '#ff6b6b';
+                statusDot.style.boxShadow = '0 0 8px #ff6b6b';
+                statusText.textContent = 'آفلاین';
+                statusText.style.color = '#ff6b6b';
+                statusDot.classList.add('status-offline');
+                statusText.classList.add('status-text-offline');
+            }
+        }
+
+        // گوش دادن به تغییرات وضعیت اتصال
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // فراخوانی اولیه برای تنظیم وضعیت
+        updateConnectionStatus();
         
         const userMemory = {
             preferences: {
@@ -3690,6 +3727,9 @@
                 addMessage("امروز می‌تونم در چه موردی بهت کمک کنم؟ از قیمت‌ها گرفته تا مأموریت‌های شهر!", 'bot');
                 saveChatHistory();
             }, 1000);
+            
+                // بررسی وضعیت اتصال پس از لود کامل صفحه
+            setTimeout(updateConnectionStatus, 1000);
         };
     </script>
     
