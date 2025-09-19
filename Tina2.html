@@ -1,0 +1,3798 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تینا - دستیار شهر کانیلا</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8a2be2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="تینا">
+    <link rel="apple-touch-icon" href="https://s6.uupload.ir/files/img_20250821_020025_605_7pey.jpg">
+    <style>
+        :root {
+            --primary-color: #8a2be2;
+            --secondary-color: #9370db;
+            --accent-color: #6a5acd;
+            --background-color: #f5f5f5;
+            --chat-background: #ffffff;
+            --user-message: #e6e6fa;
+            --bot-message: #f0e6ff;
+            --text-color: #333;
+            --light-text: #666;
+            --border-radius: 20px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --happy-color: #ffcc00;
+            --excited-color: #ff6b6b;
+            --calm-color: #6a5acd;
+            --success-color: #4cd964;
+            --warning-color: #ff9500;
+            --food-color: #ff9a3c;
+            --weapon-color: #ff6b6b;
+            --block-color: #78c2ad;
+            --tool-color: #6a5acd;
+            --seed-color: #5cd85a;
+            --special-color: #ffcc00;
+            --game-primary: #6a5acd;
+            --game-secondary: #9370db;
+            --game-accent: #ff6b6b;
+            --roleplay-color: #d291bc;
+            --neon-primary: #00ff9d;
+            --neon-secondary: #00b8ff;
+            --neon-accent: #ff00c8;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --dark-bg: #1a1a2e;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background-color: white;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .night-mode {
+            --chat-background: #2c2c2c;
+            --user-message: #4a3b76;
+            --bot-message: #3e2a5f;
+            --text-color: #f0f0f0;
+            --light-text: #b0b0b0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        
+        .night-mode .container {
+            background-color: #2c2c2c;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            color: white;
+            box-shadow: 0 6px 20px rgba(138, 43, 226, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid white;
+        }
+        
+        .avatar::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.2),
+                rgba(255, 255, 255, 0)
+            );
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+        }
+        
+        .avatar:hover::before {
+            transform: rotate(45deg) translate(20px, 20px);
+        }
+        
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .avatar.happy img {
+            transform: scale(1.1);
+            opacity: 0.9;
+            filter: sepia(1) saturate(5) hue-rotate(5deg);
+        }
+        
+        .avatar.excited img {
+            animation: bounce 0.5s ease infinite alternate;
+            filter: brightness(1.2);
+        }
+        
+        .avatar.calm img {
+            animation: pulse 2s ease infinite;
+            filter: brightness(0.95) saturate(0.5);
+        }
+        
+        .avatar.roleplay img {
+            animation: pulse 2s ease infinite;
+            filter: sepia(0.5) hue-rotate(300deg) brightness(1.1);
+        }
+        
+        .header-text h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #4cd964;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #4cd964;
+        }
+        
+        .user-level-badge {
+            background: linear-gradient(135deg, var(--happy-color), #ffdd66);
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+        
+        .menu-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .menu {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            padding: 15px;
+            z-index: 100;
+            display: none;
+            width: 250px;
+        }
+        
+        .night-mode .menu {
+            background: #3c3c3c;
+            color: var(--text-color);
+        }
+        
+        .menu.show {
+            display: block;
+        }
+        
+        .menu-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-color);
+        }
+        
+        .menu-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .night-mode .menu-item:hover {
+            background-color: #4a4a4a;
+        }
+        
+        .menu-item i {
+            color: var(--primary-color);
+            width: 24px;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: var(--chat-background);
+            transition: background-color 0.3s ease;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: var(--border-radius);
+            animation: fadeIn 0.3s ease;
+            line-height: 1.6;
+            position: relative;
+            transition: all 0.3s ease;
+            color: var(--text-color);
+        }
+        
+        .user-message {
+            background-color: var(--user-message);
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .bot-message {
+            background-color: var(--bot-message);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .quest-message {
+            background-color: #e1f7e3;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .memory-message {
+            background-color: #fff4e6;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .roleplay-message {
+            background-color: #f9e6ff;
+            border-left: 4px solid var(--roleplay-color);
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: var(--light-text);
+            margin-top: 5px;
+            text-align: left;
+        }
+        
+        .input-container {
+            display: flex;
+            padding: 20px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            gap: 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .night-mode .input-container {
+            background-color: #2c2c2c;
+            border-top: 1px solid #444;
+        }
+        
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            outline: none;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background-color: white;
+            color: #333;
+        }
+        
+        .night-mode input {
+            background-color: #3c3c3c;
+            border-color: #555;
+            color: #f0f0f0;
+        }
+        
+        input:focus {
+            border-color: var(--primary-color);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: var(--shadow);
+            font-size: 20px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+        }
+        
+        .typing-indicator {
+            display: none;
+            background-color: var(--bot-message);
+            padding: 12px 18px;
+            border-radius: var(--border-radius);
+            align-self: flex-start;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+        
+        .typing-dots {
+            display: flex;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        .suggestion-chips {
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            overflow-x: auto;
+            background-color: white;
+            border-top: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+        
+        .night-mode .suggestion-chips {
+            background-color: #2c2c2c;
+            border-top: 1px solid #444;
+        }
+        
+        .chip {
+            background-color: var(--user-message);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+            color: var(--text-color);
+        }
+        
+        .chip:hover {
+            background-color: #dcd0ff;
+        }
+        
+        .night-mode .chip {
+            background-color: #4a3b76;
+        }
+        
+        .night-mode .chip:hover {
+            background-color: #5a4b86;
+        }
+        
+        .quest-chip {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .memory-chip {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .roleplay-chip {
+            background-color: var(--roleplay-color);
+            color: white;
+        }
+        
+        .price-page {
+            display: none;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: var(--chat-background);
+            height: 100%;
+            color: var(--text-color);
+            flex-direction: column;
+        }
+        
+        .price-header {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 45px 15px 15px;
+            border: 2px solid #ddd;
+            border-radius: 30px;
+            outline: none;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            background-color: white;
+            color: #333;
+        }
+        
+        .night-mode .search-input {
+            background-color: #3c3c3c;
+            border-color: #555;
+            color: #f0f0f0;
+        }
+        
+        .search-input:focus {
+            border-color: var(--primary-color);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-text);
+        }
+        
+        .categories-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 5px;
+        }
+        
+        .category-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background-color: #f0f0f0;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+        
+        .night-mode .category-btn {
+            background-color: #3c3c3c;
+            color: #f0f0f0;
+        }
+        
+        .category-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .night-mode .category-btn:hover {
+            background-color: #4a4a4a;
+        }
+        
+        .category-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .category-btn.food {
+            background-color: var(--food-color);
+            color: white;
+        }
+        
+        .category-btn.weapon {
+            background-color: var(--weapon-color);
+            color: white;
+        }
+        
+        .category-btn.block {
+            background-color: var(--block-color);
+            color: white;
+        }
+        
+        .category-btn.tool {
+            background-color: var(--tool-color);
+            color: white;
+        }
+        
+        .category-btn.seed {
+            background-color: var(--seed-color);
+            color: white;
+        }
+        
+        .category-btn.special {
+            background-color: var(--special-color);
+            color: #333;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .item-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .night-mode .item-card {
+            background: #3c3c3c;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .item-icon {
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            background: linear-gradient(135deg, #f0e6ff, #e6e6fa);
+        }
+        
+        .night-mode .item-icon {
+            background: linear-gradient(135deg, #3e2a5f, #4a3b76);
+        }
+        
+        .item-details {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .item-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .item-price {
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .item-category {
+            font-size: 12px;
+            color: var(--light-text);
+            background-color: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 10px;
+            align-self: flex-start;
+        }
+        
+        .night-mode .item-category {
+            background-color: #4a4a4a;
+        }
+        
+        .item-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: modalFadeIn 0.3s;
+        }
+        
+        .night-mode .modal-content {
+            background: #3c3c3c;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .night-mode .modal-header {
+            border-bottom: 1px solid #555;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--light-text);
+        }
+        
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .modal-icon {
+            font-size: 50px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+        
+        .modal-name {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .modal-price {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .modal-description {
+            text-align: center;
+            line-height: 1.6;
+            color: var(--light-text);
+        }
+        
+        .modal-category {
+            text-align: center;
+            font-size: 14px;
+            background-color: #f5f5f5;
+            padding: 5px 15px;
+            border-radius: 15px;
+            align-self: center;
+        }
+        
+        .night-mode .modal-category {
+            background-color: #4a4a4a;
+        }
+        
+        .back-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            align-self: flex-start;
+        }
+        
+        .map-page {
+            display: none;
+            padding: 20px;
+            background-color: var(--chat-background);
+            height: 100%;
+            color: var(--text-color);
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .map-container {
+            position: relative;
+            width: 100%;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .map-frame {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .night-mode .map-frame {
+            background: rgba(40, 40, 60, 0.7);
+            border: 1px solid rgba(100, 100, 150, 0.3);
+        }
+        .city-map {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: block;
+        }
+        .locations-list {
+            width: 100%;
+            max-width: 600px;
+        }
+        .location-item {
+            background: linear-gradient(135deg, #f8f4ff, #eef2ff);
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary-color);
+        }
+        .night-mode .location-item {
+            background: linear-gradient(135deg, #3a2a5f, #2a2a4a);
+        }
+        .location-item h3 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        .location-item p {
+            color: var(--light-text);
+            font-size: 0.9em;
+        }
+        
+        .settings-page {
+            display: none;
+            padding: 20px;
+            background-color: var(--chat-background);
+            height: 100%;
+            color: var(--text-color);
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .setting-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .night-mode .setting-item {
+            border-bottom: 1px solid #444;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .about-page {
+            display: none;
+            padding: 20px;
+            background-color: var(--chat-background);
+            height: 100%;
+            color: var(--text-color);
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .about-content {
+            line-height: 1.8;
+        }
+        
+        .highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .quests-page {
+            display: none;
+            padding: 20px;
+            background-color: var(--chat-background);
+            height: 100%;
+            color: var(--text-color);
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .quest-item {
+            background: linear-gradient(135deg, #f0e6ff, #e6e6fa);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .night-mode .quest-item {
+            background: linear-gradient(135deg, #3e2a5f, #4a3b76);
+        }
+        
+        .quest-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quest-description {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .quest-reward {
+            font-size: 13px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .quest-progress {
+            height: 6px;
+            background-color: #ddd;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .night-mode .quest-progress {
+            background-color: #444;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .game-page {
+            display: none;
+            padding: 20px;
+            background-color: var(--chat-background);
+            height: 100%;
+            color: var(--text-color);
+            text-align: center;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .mini-games-page {
+            display: none;
+            padding: 20px;
+            background-color: var(--chat-background);
+            height: 100%;
+            color: var(--text-color);
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .games-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .game-card {
+            background: linear-gradient(135deg, #f8f4ff, #eef2ff);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+        
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--game-primary), var(--game-secondary));
+        }
+        
+        .night-mode .game-card {
+            background: linear-gradient(135deg, #3a2a5f, #2a2a4a);
+            border: 1px solid rgba(147, 112, 219, 0.2);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(106, 90, 205, 0.2);
+        }
+        
+        .game-card h3 {
+            color: var(--game-primary);
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+        
+        .game-card p {
+            color: var(--light-text);
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .game-card-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: var(--game-primary);
+            background: linear-gradient(135deg, #f0e6ff, #e6e6fa);
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            box-shadow: 0 5px 15px rgba(106, 90, 205, 0.2);
+        }
+        
+        .night-mode .game-card-icon {
+            background: linear-gradient(135deg, #3e2a5f, #4a3b76);
+        }
+        
+        .game-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f4ff, #eef2ff);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+        
+        .night-mode .game-container {
+            background: linear-gradient(135deg, #3a2a5f, #2a2a4a);
+            border: 1px solid rgba(147, 112, 219, 0.2);
+        }
+        
+        .game-title {
+            margin-bottom: 25px;
+            color: var(--game-primary);
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .game-input {
+            padding: 15px;
+            border: 2px solid var(--game-primary);
+            border-radius: 10px;
+            font-size: 16px;
+            width: 120px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: white;
+            color: #333;
+            transition: all 0.3s;
+        }
+        
+        .game-input:focus {
+            border-color: var(--game-secondary);
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2);
+        }
+        
+        .night-mode .game-input {
+            background-color: #3c3c3c;
+            color: #f0f0f0;
+            border-color: var(--secondary-color);
+        }
+        
+        .game-button {
+            background: linear-gradient(135deg, var(--game-primary), var(--game-secondary));
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(106, 90, 205, 0.3);
+        }
+        
+        .game-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(106, 90, 205, 0.4);
+        }
+        
+        .game-result {
+            margin-top: 25px;
+            font-weight: bold;
+            min-height: 24px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(106, 90, 205, 0.1);
+            text-align: center;
+        }
+        
+        .word-game-container {
+            max-width: 550px;
+            margin: 0 auto;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f4ff, #eef2ff);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.1);
+        }
+        
+        .night-mode .word-game-container {
+            background: linear-gradient(135deg, #3a2a5f, #2a2a4a);
+            border: 1px solid rgba(147, 112, 219, 0.2);
+        }
+        
+        .word-display {
+            font-size: 28px;
+            letter-spacing: 10px;
+            margin-bottom: 25px;
+            font-family: monospace;
+            font-weight: bold;
+            padding: 15px;
+            background: rgba(106, 90, 205, 0.1);
+            border-radius: 10px;
+        }
+        
+        .hint-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(106, 90, 205, 0.1);
+            border-radius: 10px;
+        }
+        
+        .shop-page {
+            display: none;
+            padding: 20px;
+            background-color: var(--chat-background);
+            height: 100%;
+            color: var(--text-color);
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .quest-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.5s ease;
+            border-right: 4px solid var(--success-color);
+            max-width: 300px;
+        }
+        
+        .night-mode .quest-notification {
+            background: #3c3c3c;
+            color: #f0f0f0;
+        }
+        
+        .game-score-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(106, 90, 205, 0.1);
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        
+        .game-buttons-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .customization-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .customization-content {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: modalFadeIn 0.3s;
+            padding: 20px;
+        }
+        
+        .night-mode .customization-content {
+            background: #3c3c3c;
+        }
+        
+        .customization-option {
+            margin-bottom: 20px;
+        }
+        
+        .customization-option label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .customization-option input, .customization-option select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        
+        .customization-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .rps-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .rps-option {
+            font-size: 40px;
+            padding: 15px;
+            border: 2px solid var(--game-primary);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .rps-option:hover {
+            background-color: var(--game-primary);
+            color: white;
+        }
+        
+        .adventure-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .adventure-option {
+            padding: 12px;
+            background: linear-gradient(135deg, #f0e6ff, #e6e6fa);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .adventure-option:hover {
+            background: linear-gradient(135deg, var(--game-primary), var(--game-secondary));
+            color: white;
+        }
+        
+        .night-mode .adventure-option {
+            background: linear-gradient(135deg, #3e2a5f, #4a3b76);
+        }
+        
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+                /* افکت‌های جدید بصری */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: var(--happy-color);
+            opacity: 0.8;
+            animation: confetti 1s ease-out forwards;
+            z-index: 1000;
+        }
+
+        .win-glow {
+            animation: winGlow 2s ease;
+        }
+
+        @keyframes winGlow {
+            0% { box-shadow: 0 0 0 0 rgba(76, 217, 100, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(76, 217, 100, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 217, 100, 0); }
+        }
+
+        .lose-shake {
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleAnimation 1s ease-out forwards;
+        }
+
+        @keyframes particleAnimation {
+            0% { transform: translate(0, 0); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)); opacity: 0; }
+        }
+
+        .victory-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5rem;
+            animation: victoryPulse 1s ease;
+            z-index: 1000;
+            text-shadow: 0 0 20px var(--happy-color);
+        }
+
+        @keyframes victoryPulse {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        
+        .glass-effect {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+        }
+
+        .floating-element {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .glow-effect {
+            box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+        }
+
+        .hologram-effect {
+            background: linear-gradient(45deg, 
+                rgba(138, 43, 226, 0.2), 
+                rgba(147, 112, 219, 0.2), 
+                rgba(106, 90, 205, 0.2));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hologram-effect::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(255, 255, 255, 0.1),
+                rgba(255, 255, 255, 0)
+            );
+            transform: rotate(45deg);
+            animation: hologramMove 6s linear infinite;
+        }
+
+        @keyframes hologramMove {
+            0% { transform: rotate(45deg) translateX(-20%); }
+            100% { transform: rotate(45deg) translateX(20%); }
+        }
+
+        .modern-btn {
+            background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+            border: none;
+            border-radius: 30px;
+            padding: 12px 25px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 255, 157, 0.4);
+        }
+
+        .modern-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 255, 157, 0.6);
+        }
+
+        .pulse-effect {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .gradient-border {
+            border: 2px solid transparent;
+            background: linear-gradient(var(--chat-background), var(--chat-background)) padding-box,
+                        linear-gradient(135deg, var(--neon-primary), var(--neon-secondary)) border-box;
+        }
+
+        .cyber-text {
+            color: transparent;
+            background: linear-gradient(45deg, var(--neon-primary), var(--neon-secondary), var(--neon-accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            text-shadow: 0 0 5px rgba(0, 255, 157, 0.5);
+        }
+        
+        .status-offline {
+            background-color: #ff6b6b;
+            box-shadow: 0 0 8px #ff6b6b;
+        }
+
+        .status-text-offline {
+            color: #ff6b6b;
+        }
+        
+        @media (max-width: 768px) {
+            .message {
+                max-width: 90%;
+            }
+            
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                height: 95vh;
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }
+            
+            .menu {
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
+            
+            .suggestion-chips {
+                padding: 10px 15px;
+            }
+            
+            .chip {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            
+            .back-btn {
+                margin-bottom: 10px;
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+            
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            }
+            
+            .item-icon {
+                height: 80px;
+                font-size: 30px;
+            }
+            
+            .categories-container {
+                gap: 8px;
+            }
+            
+            .category-btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            
+            .quest-notification {
+                left: 10px;
+                right: 10px;
+                bottom: 70px;
+                max-width: none;
+            }
+            
+            .map-frame {
+                padding: 10px;
+            }
+            
+            .location-item {
+                padding: 12px;
+            }
+            
+            .games-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-card {
+                padding: 20px;
+            }
+            
+            .game-card-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 36px;
+            }
+            
+            .game-container, .word-game-container {
+                padding: 20px;
+            }
+            
+            .word-display {
+                font-size: 22px;
+                letter-spacing: 8px;
+            }
+            
+            .rps-options {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container glass-effect floating-element" id="mainContainer">
+        <div class="header">
+            <div class="header-content">
+                <div class="avatar" id="tinaAvatar">
+                    <img src="https://s6.uupload.ir/files/img_20250821_020025_605_7pey.jpg" alt="تینا">
+                </div>
+                <div class="header-text">
+                    <h1 id="botNameDisplay">تینا (Tina)</h1>
+                    <p>دستیار شهر کانیلا در ماینکرافت</p>
+                    <div class="status">
+                        <div class="status-dot"></div>
+                        <span>آنلاین</span>
+                        <span class="user-level-badge" id="userLevelBadge">سطح ۱</span>
+                    </div>
+                </div>
+            </div>
+            <button class="menu-btn" id="menuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <div class="menu" id="menu">
+            <div class="menu-item" onclick="showPage('home')">
+                <i class="fas fa-home"></i>
+                <span>صفحه اصلی</span>
+            </div>
+            <div class="menu-item" onclick="showPage('shop')">
+                <i class="fas fa-store"></i>
+                <span>فروشگاه شهر</span>
+            </div>
+            <div class="menu-item" onclick="showPage('map')">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>نقشه کانیلا</span>
+            </div>
+            <div class="menu-item" onclick="showPage('prices')">
+                <i class="fas fa-coins"></i>
+                <span>قیمت آیتم‌ها</span>
+            </div>
+            <div class="menu-item" onclick="showPage('quests')">
+                <i class="fas fa-tasks"></i>
+                <span>مأموریت‌ها</span>
+            </div>
+            <div class="menu-item" onclick="showPage('miniGames')">
+                <i class="fas fa-gamepad"></i>
+                <span>بازی‌ها</span>
+            </div>
+            <div class="menu-item" onclick="showCustomizationModal()">
+                <i class="fas fa-user-edit"></i>
+                <span>شخصی‌سازی</span>
+            </div>
+            <div class="menu-item" onclick="showPage('settings')">
+                <i class="fas fa-cog"></i>
+                <span>تنظیمات</span>
+            </div>
+            <div class="menu-item" onclick="showPage('about')">
+                <i class="fas fa-info-circle"></i>
+                <span>درباره تینا</span>
+            </div>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot-message">
+                سلام! به شهر کانیلا در ماینکرافت خوش آمدید. من تینا هستم، دستیار مجازی این شهر. چطور می‌تونم به شما کمک کنم؟
+                <div class="message-time">هم اکنون</div>
+            </div>
+        </div>
+        
+        <div class="price-page" id="pricesPage">
+            <button class="back-btn" onclick="showPage('home')">
+                <i class="fas fa-arrow-right"></i>
+                بازگشت
+            </button>
+            
+            <div class="price-header">
+                <h2>لیست قیمت آیتم‌ها در شهر کانیلا</h2>
+                
+                <div class="search-container">
+                    <input type="text" class="search-input" id="itemSearch" placeholder="جستجوی آیتم...">
+                    <div class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                
+                <div class="categories-container">
+                    <button class="category-btn active" data-category="all">همه آیتم‌ها</button>
+                    <button class="category-btn food" data-category="food">خوراکی‌ها</button>
+                    <button class="category-btn weapon" data-category="weapon">سلاح و زره</button>
+                    <button class="category-btn block" data-category="block">بلوک‌ها</button>
+                    <button class="category-btn tool" data-category="tool">ابزارها</button>
+                    <button class="category-btn seed" data-category="seed">بذر و گل</button>
+                    <button class="category-btn special" data-category="special">لوازم خاص</button>
+                </div>
+            </div>
+            
+            <div class="items-grid" id="itemsContainer">
+            </div>
+        </div>
+        
+        <div class="item-modal" id="itemModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>جزئیات آیتم</h3>
+                    <button class="modal-close" id="modalClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="modal-name" id="modalName">نام آیتم</div>
+                    <div class="modal-price" id="modalPrice">0 جم</div>
+                    <div class="modal-category" id="modalCategory">دسته‌بندی</div>
+                    <div class="modal-description" id="modalDescription">توضیحات آیتم اینجا نمایش داده می‌شود.</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="map-page" id="mapPage">
+            <button class="back-btn" onclick="showPage('home')">
+                <i class="fas fa-arrow-right"></i>
+                بازگشت
+            </button>
+            <h2>نقشه شهر کانیلا</h2>
+            <div class="map-container">
+                <div class="map-frame">
+                    <img src="https://s6.uupload.ir/files/screenshot_۲۰۲۵۰۸۲۱_۱۱۲۵۳۳_minecraft_yqd4.jpg" alt="نقشه شهر کانیلا" class="city-map">
+                </div>
+
+                <div class="locations-list">
+                    <div class="location-item">
+                        <h3>بانک مرکزی</h3>
+                        <p>خدمات مالی و امنیت بالا برای شهروندان کانیلا</p>
+                    </div>
+                    <div class="location-item">
+                        <h3>ساختمان شهرداری</h3>
+                        <p>مدیریت شهر و خدمات عمومی به شهروندان</p>
+                    </div>
+                    <div class="location-item">
+                        <h3>زندان شهر</h3>
+                        <p>نگهداری مجرمان و افراد خاطی</p>
+                    </div>
+                    <div class="location-item">
+                        <h3>دادگستری</h3>
+                        <p>رسیدگی به مسائل قضایی و حل اختلافات</p>
+                    </div>
+                    <div class="location-item">
+                        <h3>مجتمع آپارتمانی</h3>
+                        <p>محل سکونت شهروندان کانیلا</p>
+                    </div>
+                    <div class="location-item">
+                        <h3>مرکز خرید و فروش اسب</h3>
+                        <p>خرید و فروش اسب و حیوانات اهلی</p>
+                    </div>
+                    <div class="location-item">
+                        <h3>هتل کانیلا</h3>
+                        <p>اقامتگاه مسافران و مهمانان شهر</p>
+                    </div>
+                    <div class="location-item">
+                        <h3>مطب دکتر</h3>
+                        <p>خدمات درمانی و پزشکی برای شهروندان</p>
+                    </div>
+                    <div class="location-item">
+                        <h3>فروشگاه مرکزی</h3>
+                        <p>عرضه انواع کالا و مواد غذایی</p>
+                    </div>
+                    <div class="location-item">
+                        <h3>استبل اسب‌ها</h3>
+                        <p>نگهداری و پرورش اسب</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-page" id="settingsPage">
+            <button class="back-btn" onclick="showPage('home')">
+                <i class="fas fa-arrow-right"></i>
+                بازگشت
+            </button>
+            <h2>تنظیمات تینا</h2>
+            
+            <div class="setting-item">
+                <div>
+                    <h3>حالت شب</h3>
+                    <p>فعالسازی تم تیره برای محیط چت</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-item">
+                <div>
+                    <h3>انیمیشن‌ها</h3>
+                    <p>فعالسازی انیمیشن‌های رابط کاربری</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="animationsToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-item">
+                <div>
+                    <h3>ذخیره خودکار چت</h3>
+                    <p>ذخیره خودکار تاریخچه مکالمات</p>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="autoSaveToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-item">
+                <div>
+                    <h3>بازنشانی اطلاعات</h3>
+                    <p>حذف همه داده‌های ذخیره شده</p>
+                </div>
+                <button class="game-button" onclick="resetAllData()" style="padding: 8px 15px;">بازنشانی</button>
+            </div>
+        </div>
+        
+        <div class="about-page" id="aboutPage">
+            <button class="back-btn" onclick="showPage('home')">
+                <i class="fas fa-arrow-right"></i>
+                بازگشت
+            </button>
+            <h2>درباره تینا</h2>
+            <div class="about-content">
+                <p>تینا دستیار مجازی شهر <span class="highlight">کانیلا</span> در دنیای ماینکرافت است. این ربات به منظور کمک به بازیکنان و پاسخگویی به سوالات آنان درباره شهر طراحی شده است.</p>
+                
+                <p style="margin-top: 15px;">تینا می‌تواند به سوالات زیر پاسخ دهد:</p>
+                <ul style="margin-top: 10px; padding-right: 20px;">
+                    <li>قیمت آیتم‌ها در فروشگاه شهر</li>
+                    <li>مکان‌های مهم و نحوه دسترسی به آنها</li>
+                    <li>قوانین شهر کانیلا</li>
+                    <li>رویدادهای جاری در شهر</li>
+                    <li>و هرگونه سوال دیگر درباره ماینکرافت</li>
+                </ul>
+                
+                <p style="margin-top: 15px;">تینا توسط سازنده شهر کانیلا طراحی و توسعه داده شده است تا تجربه بهتری برای بازیکنان فراهم کند.</p>
+                
+                <div style="margin-top: 20px; padding: 15px; background-color: #f0e6ff; border-radius: 10px;">
+                    <h3>اطلاعات فنی</h3>
+                    <p>نسخه: 2.5.0</p>
+                    <p>آخرین بروزرسانی: 1404/06/06</p>
+                    <p>حالت: آفلاین (بدون نیاز به اتصال اینترنت)</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="shop-page" id="shopPage">
+            <button class="back-btn" onclick="showPage('home')">
+                <i class="fas fa-arrow-right"></i>
+                بازگشت
+            </button>
+            <h2>فروشگاه شهر کانیلا</h2>
+            <div class="about-content">
+                <p>فروشگاه شهر کانیلا مکانی برای خرید و فروش آیتم‌های مختلف ماینکرافت است. شما می‌توانید با قیمت‌های مناسب، آیتم‌های مورد نیاز خود را تهیه کنید.</p>
+                
+                <div style="margin-top: 20px;">
+                    <h3>ساعات کاری فروشگاه:</h3>
+                    <p>شبانه‌روزی (همیشه باز)</p>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h3>خدمات ویژه:</h3>
+                    <ul style="margin-top: 10px; padding-right: 20px;">
+                        <li>فروش آیتم‌های نادر با قیمت مناسب</li>
+                        <li>سیستم خرید اقساطی برای آیتم‌های گران‌قیمت</li>
+                        <li>معاوضه آیتم‌های خاص با یکدیگر</li>
+                        <li>پذیرش آیتم‌های دست‌ساز بازیکنان</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background-color: #e6e6fa; border-radius: 10px;">
+                    <h3>مکان فروشگاه:</h3>
+                    <p>مرکز شهر کانیلا، جنب قلعه تاریخی</p>
+                    <p>مختصات: X: 120, Y: 64, Z: -350</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quests-page" id="questsPage">
+            <button class="back-btn" onclick="showPage('home')">
+                <i class="fas fa-arrow-right"></i>
+                بازگشت
+            </button>
+            <h2>مأموریت‌های شهر کانیلا</h2>
+            <p>با انجام مأموریت‌ها می‌توانید امتیاز کسب کنید و سطح خود را افزایش دهید.</p>
+            
+            <div id="questsContainer">
+            </div>
+        </div>
+        
+        <div class="game-page" id="gamePage">
+            <!-- این صفحه اکنون خالی است و فقط برای سازگاری باقی مانده -->
+        </div>
+        
+        <div class="mini-games-page" id="miniGamesPage">
+            <button class="back-btn" onclick="showPage('home')">
+                <i class="fas fa-arrow-right"></i>
+                بازگشت
+            </button>
+            <h2>بازی‌های سرگرم کننده</h2>
+            <p>یک بازی انتخاب کن و با تینا رقابت کن!</p>
+            
+            <div class="games-container">
+                <div class="game-card" onclick="startNumberGame()">
+                    <div class="game-card-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3>حدس عدد</h3>
+                    <p>یک عدد بین 1 تا 100 حدس بزن و امتیاز کسب کن!</p>
+                    <button class="game-button">شروع بازی</button>
+                </div>
+                
+                <div class="game-card" onclick="startWordGame()">
+                    <div class="game-card-icon">
+                        <i class="fas fa-font"></i>
+                    </div>
+                    <h3>حدس کلمه</h3>
+                    <p>کلمه مرتبط با ماینکرافت را حدس بزن!</p>
+                    <button class="game-button">شروع بازی</button>
+                </div>
+                
+                <div class="game-card" onclick="startRockPaperScissors()">
+                    <div class="game-card-icon">
+                        <i class="fas fa-hand-rock"></i>
+                    </div>
+                    <h3>سنگ کاغذ قیچی</h3>
+                    <p>بازی کلاسیک سنگ کاغذ قیچی با تینا!</p>
+                    <button class="game-button">شروع بازی</button>
+                </div>
+                
+                <div class="game-card" onclick="startAdventureGame()">
+                    <div class="game-card-icon">
+                        <i class="fas fa-dragon"></i>
+                    </div>
+                    <h3>ماجراجویی</h3>
+                    <p>یک ماجراجویی کوتاه در شهر کانیلا!</p>
+                    <button class="game-button">شروع بازی</button>
+                </div>
+                
+                <div class="game-card" onclick="startRoleplayAdventure()">
+                    <div class="game-card-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <h3>ماجراجویی داستانی</h3>
+                    <p>یک ماجراجویی داستانی با تینا در نقش‌های مختلف!</p>
+                    <button class="game-button">شروع بازی</button>
+                </div>
+            </div>
+            
+            <div id="numberGameContainer" class="game-container" style="display: none;">
+                <h3 class="game-title">حدس عدد بین 1 تا 100</h3>
+                <input type="number" id="guessInput" class="game-input" min="1" max="100" placeholder="1-100">
+                <button onclick="checkGuess()" class="game-button">حدس بزن</button>
+                
+                <div class="game-result" id="gameResult"></div>
+                <div class="game-score-display">
+                    <p>امتیاز: <span id="gameScore">0</span></p>
+                    <p>حدس‌های باقیمانده: <span id="guessesLeft">8</span></p>
+                </div>
+                <div class="game-buttons-container">
+                    <button onclick="backToGames()" class="game-button" style="background: var(--secondary-color);">بازگشت به بازی‌ها</button>
+                    <button onclick="initNumberGame()" class="game-button" style="background: var(--game-accent);">شروع مجدد</button>
+                </div>
+            </div>
+            
+            <div id="wordGameContainer" class="word-game-container" style="display: none;">
+                <h3 class="game-title">حدس کلمه ماینکرافتی</h3>
+                <div class="word-display" id="wordDisplay"></div>
+                <input type="text" id="wordInput" class="game-input" placeholder="حرف یا کلمه کامل">
+                <div class="game-buttons-container">
+                    <button onclick="checkWordGuess()" class="game-button">حدس بزن</button>
+                    <button onclick="getHint()" class="game-button" style="background: var(--warning-color);">راهنما</button>
+                </div>
+                
+                <div class="hint-container">
+                    <p>حروف استفاده شده: <span id="usedLetters"></span></p>
+                    <p>امتیاز: <span id="wordGameScore">100</span></p>
+                </div>
+                
+                <div class="game-result" id="wordGameResult"></div>
+                <div class="game-buttons-container">
+                    <button onclick="backToGames()" class="game-button" style="background: var(--secondary-color);">بازگشت به بازی‌ها</button>
+                    <button onclick="initWordGame()" class="game-button" style="background: var(--game-accent);">شروع مجدد</button>
+                </div>
+            </div>
+            
+            <div id="rpsGameContainer" class="game-container" style="display: none;">
+                <h3 class="game-title">سنگ کاغذ قیچی</h3>
+                <p>انتخاب خودت رو انجام بده:</p>
+                
+                <div class="rps-options">
+                    <div class="rps-option" onclick="playRPS('سنگ', event)">✊</div>
+                    <div class="rps-option" onclick="playRPS('کاغذ', event)">✋</div>
+                    <div class="rps-option" onclick="playRPS('قیچی', event)">✌️</div>
+                </div>
+                
+                <div class="game-result" id="rpsGameResult"></div>
+                
+                <div class="game-score-display">
+                    <p>برد: <span id="wins">0</span></p>
+                    <p>باخت: <span id="losses">0</span></p>
+                    <p>مساوی: <span id="draws">0</span></p>
+                </div>
+                
+                <div class="game-buttons-container">
+                    <button onclick="backToGames()" class="game-button" style="background: var(--secondary-color);">بازگشت به بازی‌ها</button>
+                    <button onclick="resetRPS()" class="game-button" style="background: var(--game-accent);">شروع مجدد</button>
+                </div>
+            </div>
+            
+            <div id="adventureGameContainer" class="game-container" style="display: none;">
+                <h3 class="game-title" id="adventureTitle">ماجراجویی در شهر کانیلا</h3>
+                <div class="game-result" id="adventureStory"></div>
+                
+                <div class="adventure-options" id="adventureOptions">
+                </div>
+                
+                <div class="game-buttons-container">
+                    <button onclick="backToGames()" class="game-button" style="background: var(--secondary-color);">بازگشت به بازی‌ها</button>
+                </div>
+            </div>
+            
+            <div id="roleplayGameContainer" class="game-container" style="display: none;">
+                <h3 class="game-title" id="roleplayTitle">ماجراجویی داستانی</h3>
+                <div class="game-result" id="roleplayStory"></div>
+                
+                <div class="adventure-options" id="roleplayOptions">
+                </div>
+                
+                <div class="game-buttons-container">
+                    <button onclick="backToGames()" class="game-button" style="background: var(--secondary-color);">بازگشت به بازی‌ها</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="suggestion-chips">
+            <div class="chip" onclick="suggestionChip('قیمت باکس موسیقی چنده؟')">قیمت باکس موسیقی</div>
+            <div class="chip" onclick="suggestionChip('چخبر؟')">چخبر؟</div>
+            <div class="chip quest-chip" onclick="showActiveQuests()">مأموریت‌های من</div>
+            <div class="chip memory-chip" onclick="showMemory()">خاطرات من و تینا</div>
+            <div class="chip roleplay-chip" onclick="startRoleplayAdventure()">ماجراجویی داستانی</div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="پیام خود را اینجا تایپ کنید...">
+            <button onclick="sendMessage()" class="modern-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+
+        <div class="quest-notification" id="questNotification">
+            <div id="notificationContent"></div>
+        </div>
+        
+        <div class="customization-modal" id="customizationModal">
+            <div class="customization-content">
+                <h2>شخصی‌سازی تینا</h2>
+                
+                <div class="customization-option">
+                    <label for="botNameInput">نام تینا:</label>
+                    <input type="text" id="botNameInput" placeholder="نام جدید برای تینا">
+                </div>
+                
+                <div class="customization-option">
+                    <label for="speechStyleSelect">سبک گفتاری:</label>
+                    <select id="speechStyleSelect">
+                        <option value="normal">معمولی</option>
+                        <option value="formal">رسمی</option>
+                        <option value="friendly">صمیمی</option>
+                        <option value="funny">طنز</option>
+                        <option value="wise">خردمندانه</option>
+                    </select>
+                </div>
+                
+                <div class="customization-buttons">
+                    <button class="game-button" onclick="saveCustomization()" style="background: var(--success-color);">ذخیره</button>
+                    <button class="game-button" onclick="closeCustomizationModal()" style="background: var(--secondary-color);">لغو</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    	        // توابع افکت‌های بصری
+        function createConfetti(container) {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = Math.random() * 100 + 'px';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDuration = Math.random() * 2 + 1 + 's';
+                container.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 2000);
+            }
+        }
+
+        function createParticles(x, y, color, container) {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.backgroundColor = color;
+                particle.style.width = Math.random() * 5 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 50 + 30;
+                const xOffset = Math.cos(angle) * speed;
+                const yOffset = Math.sin(angle) * speed;
+                
+                particle.style.setProperty('--x', xOffset + 'px');
+                particle.style.setProperty('--y', yOffset + 'px');
+                
+                container.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 1000);
+            }
+        }
+
+        function showVictoryAnimation() {
+            const victory = document.createElement('div');
+            victory.className = 'victory-animation';
+            victory.innerHTML = '🎉';
+            document.body.appendChild(victory);
+            
+            setTimeout(() => {
+                victory.remove();
+            }, 2000);
+        }
+
+        function applyWinGlow(element) {
+            element.classList.add('win-glow');
+            setTimeout(() => {
+                element.classList.remove('win-glow');
+            }, 2000);
+        }
+
+        function applyLoseShake(element) {
+            element.classList.add('lose-shake');
+            setTimeout(() => {
+                element.classList.remove('lose-shake');
+            }, 500);
+        }
+        const chatContainer = document.getElementById('chatContainer');
+        const userInput = document.getElementById('userInput');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const menuBtn = document.getElementById('menuBtn');
+        const menu = document.getElementById('menu');
+        const tinaAvatar = document.getElementById('tinaAvatar');
+        const mainContainer = document.getElementById('mainContainer');
+        const userLevelBadge = document.getElementById('userLevelBadge');
+        const questsContainer = document.getElementById('questsContainer');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const animationsToggle = document.getElementById('animationsToggle');
+        const autoSaveToggle = document.getElementById('autoSaveToggle');
+        const botNameDisplay = document.getElementById('botNameDisplay');
+        const statusDot = document.querySelector('.status-dot');
+        const statusText = document.querySelector('.status span:nth-child(2)');
+
+        // تابع پیشرفته برای بررسی وضعیت اتصال
+        function updateConnectionStatus() {
+            // بررسی اولیه با navigator.onLine
+            if (navigator.onLine) {
+                // بررسی بیشتر با یک درخواست به سرور
+                checkRealConnection()
+                    .then(isOnline => {
+                        if (isOnline) {
+                            setOnlineStatus();
+                        } else {
+                            setOfflineStatus();
+                        }
+                    })
+                    .catch(() => {
+                        setOfflineStatus();
+                    });
+            } else {
+                setOfflineStatus();
+            }
+        }
+
+        // تابع برای بررسی واقعی اتصال اینترنت
+        function checkRealConnection() {
+            return new Promise((resolve, reject) => {
+                // استفاده از چند منبع مختلف برای اطمینان از وضعیت اتصال
+                const timeout = setTimeout(() => resolve(false), 3000);
+        
+                // درخواست به یک فایل کوچک در ریپوی GitHub
+                fetch('https://al1r3z4-b.github.io/tina-assistant/online-check.txt', {
+                    method: 'HEAD',
+                    cache: 'no-store',
+                    mode: 'no-cors'
+                })
+                .then(() => {
+                    clearTimeout(timeout);
+                    resolve(true);
+                })
+                .catch(() => {
+                    clearTimeout(timeout);
+                    resolve(false);
+                });
+            });
+        }
+
+        // تنظیم وضعیت آنلاین
+        function setOnlineStatus() {
+            statusDot.style.backgroundColor = '#4cd964';
+            statusDot.style.boxShadow = '0 0 8px #4cd964';
+            statusText.textContent = 'آنلاین';
+            statusText.style.color = '';
+            statusDot.classList.remove('status-offline');
+            statusText.classList.remove('status-text-offline');
+        }
+
+        // تنظیم وضعیت آفلاین
+        function setOfflineStatus() {
+            statusDot.style.backgroundColor = '#ff6b6b';
+            statusDot.style.boxShadow = '0 0 8px #ff6b6b';
+            statusText.textContent = 'آفلاین';
+            statusText.style.color = '#ff6b6b';
+            statusDot.classList.add('status-offline');
+            statusText.classList.add('status-text-offline');
+        }
+
+        // گوش دادن به تغییرات وضعیت اتصال
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // چک کردن دوره‌ای وضعیت اتصال هر 10 ثانیه
+        setInterval(updateConnectionStatus, 10000);
+
+        // فراخوانی اولیه برای تنظیم وضعیت
+        updateConnectionStatus();
+        
+        const userMemory = {
+            preferences: {
+                botName: "تینا",
+                speechStyle: "normal"
+            },
+            conversationHistory: [],
+            shortTermMemory: [],
+            completedQuests: [],
+            activeQuests: [],
+            userLevel: 1,
+            userXP: 0,
+            learnedResponses: {},
+            questProgress: {
+                conversation: 0,
+                price_check: 0
+            }
+        };
+
+        const questsSystem = {
+            dailyQuests: [
+                {
+                    id: 'daily_1',
+                    title: 'گفتگو با تینا',
+                    description: '۵ بار با تینا گفتگو کنید',
+                    goal: 5,
+                    progress: 0,
+                    reward: 25,
+                    type: 'conversation'
+                },
+                {
+                    id: 'daily_2',
+                    title: 'جستجوی قیمت‌ها',
+                    description: 'قیمت ۳ آیتم مختلف را بپرسید',
+                    goal: 3,
+                    progress: 0,
+                    reward: 30,
+                    type: 'price_check'
+                }
+            ],
+            weeklyQuests: [
+                {
+                    id: 'weekly_1',
+                    title: 'دوستانۀ پرحرف',
+                    description: '۲۰ بار با تینا گفتگو کنید',
+                    goal: 20,
+                    progress: 0,
+                    reward: 100,
+                    type: 'conversation'
+                }
+            ],
+            achievementQuests: [
+                {
+                    id: 'achieve_1',
+                    title: 'کاشف شهر',
+                    description: 'از تمام مکان‌های مهم شهر کانیلا دیدن کنید',
+                    goal: 5,
+                    progress: 0,
+                    reward: 150,
+                    type: 'location_visit'
+                }
+            ]
+        };
+
+        const itemPrices = [
+            { id: 1, name: "گوشت خام گاو/مرغ/گوسفند", price: "۱ جم", category: "food", icon: "fa-drumstick-bite", description: "گوشت خام که می‌توانید بپزید و به عنوان غذایی مقوی استفاده کنید." },
+            { id: 2, name: "گوشت پخته گاو/مرغ/گوسفند", price: "۲ جم", category: "food", icon: "fa-utensils", description: "گوشت کاملاً پخته شده، آماده خوردن و بازیابی انرژی." },
+            { id: 3, name: "استیک خرگوش", price: "۱ جم", category: "food", icon: "fa-paw", description: "استیک خوشمزه خرگوش برای تغذیه و بازیابی سلامتی." },
+            { id: 4, name: "ماهی خام/پخته", price: "۱ جم", category: "food", icon: "fa-fish", description: "ماهی تازه که می‌توانید خام یا پخته مصرف کنید." },
+            { id: 5, name: "سیب", price: "۱ جم", category: "food", icon: "fa-apple-alt", description: "میوه تازه و خوشمزه برای تغذیه سریع." },
+            { id: 6, name: "هویج", price: "۱ جم", category: "food", icon: "fa-carrot", description: "سبزی مقوی که می‌تواند برای پرورش خرگوش نیز استفاده شود." },
+            { id: 7, name: "هندوانه", price: "۱ جم", category: "food", icon: "fa-watermelon", description: "میوه آبدار و خنک برای روزهای گرم." },
+            { id: 8, name: "هندوانه کامل", price: "۷ جم", category: "food", icon: "fa-watermelon", description: "یک هندوانه کامل که می‌توانید تکه تکه کنید." },
+            { id: 9, name: "سوپ قارچ", price: "۳ جم", category: "food", icon: "fa-mortar-pestle", description: "سوپ گرم و لذیذ قارچ برای بازیابی انرژی." },
+            { id: 10, name: "سوپ چغندر", price: "۴ جم", category: "food", icon: "fa-mortar-pestle", description: "سوپ مقوی چغندر با خواص درمانی." },
+            { id: 11, name: "سوプ خرگوش", price: "９ جم", category: "food", icon: "fa-mortar-pestle", description: "سوپ خوشمزه و مقوی گوشت خرگوش." },
+            { id: 12, name: "کلپ خشک شده", price: "１ جم", category: "food", icon: "fa-leaf", description: "گیاه دریایی خشک شده که می‌تواند به عنوان غذا یا برای پرورش استفاده شود." },
+            { id: 13, name: "شمشیر چوبی", price: "３ جم", category: "weapon", icon: "fa-sword", description: "اسلحه ابتدایی برای شروع ماجراجویی شما." },
+            { id: 14, name: "شمشیر سنگی", price: "５ جم", category: "weapon", icon: "fa-sword", description: "شمشیر با تیغه سنگی، قدرتمندتر از چوب." },
+            { id: 15, name: "شمشیر آهنی", price: "１０ جم", category: "weapon", icon: "fa-sword", description: "شمشیر با تیغه آهنی، قابل اعتماد و بادوام." },
+            { id: 16, name: "شمشیر طلایی", price: "１２ جم", category: "weapon", icon: "fa-sword", description: "شمشیر با تیغه طلایی، سریع اما کم دوام." },
+            { id: 17, name: "شمشیر الماسی", price: "２０ جم", category: "weapon", icon: "fa-sword", description: "قدرتمندترین شمشیر با تیغه الماسی، بهترین برای مبارزه." },
+            { id: 18, name: "زره چرمی (هر قطعه)", price: "５ جم", category: "weapon", icon: "fa-vest", description: "زره چرمی سبک برای محافظت اولیه." },
+            { id: 19, name: "زره زنجیری (هر قطعه)", price: "９ جم", category: "weapon", icon: "fa-vest", description: "زره زنجیری برای محافظت بهتر در نبرد." },
+            { id: 20, name: "زره آهنی (هر قطعه)", price: "１２ جم", category: "weapon", icon: "fa-vest", description: "زره آهنی قابل اعتماد و بادوام." },
+            { id: 21, name: "زره طلایی (هر قطعة)", price: "１５ جم", category: "weapon", icon: "fa-vest", description: "زره طلایی زیبا اما کم دوام." },
+            { id: 22, name: "زره الماسی (هر قطعة)", price: "２５ جم", category: "weapon", icon: "fa-vest", description: "بهترین زره با بیشترین محافظت از الماس." },
+            { id: 23, name: "سپر", price: "８ جم", category: "weapon", icon: "fa-shield-alt", description: "برای دفاع در برابر حملات دشمنان." },
+            { id: 24, name: "نیزه", price: "１０ جم", category: "weapon", icon: "fa-bullseye", description: "اسلحه دوربرد برای حمله از فاصله ایمن." },
+            { id: 25, name: "قطب نمای بازیابی", price: "２５ جم", category: "weapon", icon: "fa-compass", description: "قطب نمایی که به آخرین نقطه مرگ شما اشاره می‌کند." },
+            { id: 26, name: "گرز", price: "３５ جم", category: "weapon", icon: "fa-gem", description: "سلاحی سنگین و قدرتمند برای ضربات مخرب." },
+            { id: 27, name: "بلوک‌ها (۳ عدد)", price: "１ جم", category: "block", icon: "fa-cube", description: "بلوک‌های ساختمانی برای ساخت و ساز." },
+            { id: 28, name: "ابزار چوبی", price: "３ جم", category: "tool", icon: "fa-tools", description: "ابزار ابتدایی برای شروع، فقط برای استفاده اولیه." },
+            { id: 29, name: "ابزار سنگی", price: "５ جم", category: "tool", icon: "fa-tools", description: "ابزار سنگی با دوام بیشتر от چوب." },
+            { id: 30, name: "ابزار آهنی", price: "１２ جم", category: "tool", icon: "fa-tools", description: "ابزار قابل اعتماد و بادوام از جنس آهن." },
+            { id: 31, name: "ابزار طلایی", price: "１５ جم", category: "tool", icon: "fa-tools", description: "ابزار سریع اما کم دوام از جنس طلا." },
+            { id: 32, name: "ابزار الماسی", price: "２۵ جم", category: "tool", icon: "fa-tools", description: "بهترین ابزار با بیشترین دوام و کارایی." },
+            { id: 33, name: "بذر گندم و هندوانه (۱۵ عدد)", price: "１２ جم", category: "seed", icon: "fa-seedling", description: "بذر برای کشت گندم و هندوانه در مزرعه." },
+            { id: 34, name: "بذرهای دیگر (５ عدد)", price: "３ جم", category: "seed", icon: "fa-seedling", description: "انواع دیگر بذرها برای کشت گیاهان مختلف." },
+            { id: 35, name: "گل های معمولی (５ عدد)", price: "１ جم", category: "seed", icon: "fa-leaf", description: "گل‌های تزئینی برای زیباسازی محیط." },
+            { id: 36, name: "گل های نادر (１ عدد)", price: "３ جم", category: "seed", icon: "fa-leaf", description: "گل‌های نادر و خاص برای کلکسیونرها." },
+            { id: 37, name: "رنگ ها (２ عدد)", price: "１ جم", category: "seed", icon: "fa-paint-brush", description: "رنگ برای تزئین و رنگ آمیزی بلوک‌ها." },
+            { id: 38, name: "دوربین جاسوسی", price: "８ جم", category: "special", icon: "fa-eye", description: "برای نظارت و مشاهده از راه دور." },
+            { id: 39, name: "قطب نما", price: "１０ جم", category: "special", icon: "fa-compass", description: "برای جهت‌یابی و پیدا کردن راه." },
+            { id: 40, name: "افسار حیوانات", price: "５ جم", category: "special", icon: "fa-ring", description: "برای رام کردن و هدایت حیوانات." },
+            { id: 41, name: "نقشه", price: "１２ جم", category: "special", icon: "fa-map", description: "برای ثبت و مشاهده مناطق اکتشاف شده." },
+            { id: 42, name: "ساعت", price: "８ جم", category: "special", icon: "fa-clock", description: "برای دانستن زمان روز و شب." },
+            { id: 43, name: "زره سگ", price: "３۰ جم", category: "special", icon: "fa-vest", description: "محافظ برای سگ وفادار شما." },
+            { id: 44, name: "اکس پی", price: "１５ جم", category: "special", icon: "fa-star", description: "منبع تجربه برای enchant کردن وسایل." },
+            { id: 45, name: "کوره", price: "５ جم", category: "special", icon: "fa-fire", description: "برای ذوب سنگ‌معدن و پخت غذا." },
+            { id: 46, name: "شنل", price: "５０ جم", category: "special", icon: "fa-mitten", description: "پوشاک تزئینی برای ظاهر منحصر به فرد." },
+            { id: 47, name: "زین", price: "２０ جم", category: "special", icon: "fa-horse", description: "برای رام کردن و سواری اسب." },
+            { id: 48, name: "شیپور", price: "１２ جم", category: "special", icon: "fa-music", description: "برای تولید صدا و سیگنال." },
+            { id: 49, name: "زره اسب چرمی", price: "１０ جم", category: "special", icon: "fa-vest", description: "محافظ چرمی برای اسب شما." },
+            { id: 50, name: "زره اسب آهنی", price: "２０ جم", category: "special", icon: "fa-vest", description: "محافظ آهنی برای اسب شما." },
+            { id: 51, name: "زره اسب طلایی", price: "２５ جم", category: "special", icon: "fa-vest", description: "محافظ طلایی برای اسب شما." },
+            { id: 52, name: "زره اسب الماسی", price: "４０ جم", category: "special", icon: "fa-vest", description: "بهترین محافظ الماسی برای اسب شما." },
+            { id: 53, name: "کتاب خاطرات", price: "５ جم", category: "special", icon: "fa-book", description: "برای ثبت خاطرات و یادداشت‌ها." },
+            { id: 54, name: "گلدان تزئینی", price: "８ جم", category: "special", icon: "fa-mortar-pestle", description: "برای کاشت گل و تزئین محیط." },
+            { id: 55, name: "باکس موسیقی", price: "１５ جم", category: "special", icon: "fa-music", description: "برای پخش موسیقی و ایجاد ambiance." },
+            { id: 56, name: "تابلو نقاشی", price: "１０ جم", category: "special", icon: "fa-paint-brush", description: "برای نصب نقاشی‌های مختلف روی دیوار." },
+            { id: 57, name: "قاب آیتم", price: "３ جم", category: "special", icon: "fa-image", description: "برای نمایش آیتم‌ها به صورت تزئینی." },
+            { id: 58, name: "صندوق", price: "５ جم", category: "special", icon: "fa-box-open", description: "برای ذخیره و نگهداری آیتم‌ها." },
+            { id: 59, name: "صندوق ضد آب", price: "６ جم", category: "special", icon: "fa-box-open", description: "صندوق مقاوم در برابر آب برای ذخیره‌سازی ایمن." },
+            { id: 60, name: "جعبه قابل حمل", price: "３۵ جم", category: "special", icon: "fa-box", description: "جعبه ای که می‌توانید همراه خود حمل کنید." },
+            { id: 61, name: "جعبه اندر", price: "３０ جم", category: "special", icon: "fa-box", description: "جعبه مخصوص برای ذخیره‌سازی در اندر." },
+            { id: 62, name: "همبند", price: "１５ جم", category: "special", icon: "fa-link", description: "برای اتصال و ترکیب آیتم‌ها." }
+        ];
+
+        // کلمات برای بازی حدس کلمه
+        const wordGameWords = [
+            {word: "ماینکرافت", hint: "نام بازی"},
+            {word: "الماس", hint: "گرانبهاترین سنگ معدنی"},
+            {word: "کریپر", hint: "موجود سبز رنگ منفجره"},
+            {word: "اسب", hint: "حیوانی که می‌توان سوار آن شد"},
+            {word: "شمشیر", hint: "سلاح نزدیک‌برد"},
+            {word: "کانیلا", hint: "نام این شهر"},
+            {word: "تینا", hint: "نام دستیار شهر"},
+            {word: "زره", hint: "برای محافظت از خود"},
+            {word: "مزرعه", hint: "جایی برای کشت محصولات"},
+            {word: "معدن", hint: "جایی برای استخراج منابع"}
+        ];
+
+        // متغیرهای بازی
+        let randomNumber, guessesLeft, gameScore;
+        let currentWord, hiddenWord, usedLetters, wordGameScore;
+        let rpsWins = 0, rpsLosses = 0, rpsDraws = 0;
+        let adventureState = {};
+        let roleplayState = {};
+
+        darkModeToggle.addEventListener('change', function() {
+            if(this.checked) {
+                mainContainer.classList.add('night-mode');
+                localStorage.setItem('nightMode', 'enabled');
+            } else {
+                mainContainer.classList.remove('night-mode');
+                localStorage.setItem('nightMode', 'disabled');
+            }
+        });
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            if(localStorage.getItem('nightMode') === 'enabled') {
+                darkModeToggle.checked = true;
+                mainContainer.classList.add('night-mode');
+            }
+            
+            if(localStorage.getItem('animations') === 'disabled') {
+                animationsToggle.checked = false;
+            }
+            
+            if(localStorage.getItem('autoSave') === 'disabled') {
+                autoSaveToggle.checked = false;
+            }
+            
+            loadUserData();
+            loadChatHistory();
+            loadQuests();
+            initDailyQuests();
+        });
+        
+        animationsToggle.addEventListener('change', function() {
+            if(this.checked) {
+                localStorage.setItem('animations', 'enabled');
+            } else {
+                localStorage.setItem('animations', 'disabled');
+            }
+        });
+        
+        autoSaveToggle.addEventListener('change', function() {
+            if(this.checked) {
+                localStorage.setItem('autoSave', 'enabled');
+            } else {
+                localStorage.setItem('autoSave', 'disabled');
+            }
+        });
+        
+        menuBtn.addEventListener('click', function(e) {
+            menu.classList.toggle('show');
+            e.stopPropagation();
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (menu.classList.contains('show') && !menu.contains(e.target) && e.target !== menuBtn) {
+                menu.classList.remove('show');
+            }
+        });
+        
+        const predefinedResponses = {
+            "سلام": ["سلام عزیزم! چطوری؟", "سلام! خوبی؟", "سلام به شما! چطور می‌تونم کمک کنم؟", "درود! چه خبرا؟"],
+            "خداحافظ": ["خداحافظ! از دیدارت خوشحال شدم.", "بای! امیدوارم بازم ببینمت.", "خداحافظ! ممنون که به کانیلا سر زدی.", "مواظب خودت باش! به امید دیدار."],
+            "کمک": ["حتما! من می‌تونم در مورد قیمت آیتم‌ها, مکان‌های مهم شهر و اطلاعات عمومی ماینکرافت کمک کنم. چه سوالی داری؟", "خوشحال می‌شم کمک کنم. چه اطلاعاتی نیاز داری؟", "چطور می‌تونم راهنماییت کنم؟"],
+            "قوانین": ["قوانین شهر کانیلا: 1. به دیگران احترام بگذارید 2. هیچ چیزی را بدون اجازه برندارید 3. از محیط زیست شهر محافظت کنید 4. از ساخت و سازهای غیرمجاز خودداری کنید"],
+            "مکان های مهم": ["شهر کانیلا دارای چندین مکان مهم است: بازار مرکزی, قلعه تاریخی, مزرعه عمومی, معبد باستانی و کتابخانه. کدام یک مورد علاقه شماست؟"],
+            "چخبر": ["همه چی آرومه. بازیکنا دارن از شهر لذت میبرن. از تو چه خبر؟", "چیز خاصی نیست, فقط منتظر کمک به بازیکنا هستم. از تو چه خبر？", "همه چیز رو به راهه! تو چه خبر؟"],
+            "چه خبر": ["همه چی آرومه. بازیکنا دارن از شهر لذت میبرن. از تو چه خبر؟", "چیز خاصی نیست, فقط منتظر کمک به بازیکنا هستم. از تو چه خبر？", "همه چیز رو به راهه! تو چه خبر？"],
+            "خوبی": ["ممنونم که پرسیدی! من خوبم, همیشه آماده کمک به بازیکنای شهر کانیلا هستم. تو خوبی؟", "آره من خوبم! وظیفه منه که به بازیکنا کمک کنم. تو چطوری？"],
+            "فروشگاه": ["فروشگاه شهر کانیلا در مرکز شهر قرار داره و همه نوع آیتمی رو با قیمت مناسب ارائه میده. میتونی از منوی اصلی گزینه 'فروشگاه شهر' رو انتخاب کنی یا از من بپرسی قیمت آیتم خاصی چنده."],
+            "نقشه": ["نقشه شهر کانیلا رو میتونی از منوی اصلی انتخاب کنی. اونجا همه مکان‌های مهم شهر مشخص شده."],
+            "شهر کانیلا": ["شهر کانیلا یک شهر زیبا و پیشرفته در دنیای ماینکرافت هست که توسط شهردار سن آندرس ساخته شده. این شهر دارای امکانات کامل مثل فروشگاه, بانک, مزرعه و معبد هست."],
+            "مأموریت": ["ما چندین مأموریت جالب داریم! از منوی اصلی گزینه 'مأموریت‌ها' رو انتخاب کن تا ببینی چه کارهایی میتونی انجام بدی."],
+            "بازی": ["چه بازیی دوست داری؟ من بازی حدس عدد و حدس کلمه دارم. از منوی اصلی گزینه 'بازی‌ها' رو انتخاب کن."],
+            "سطح": ["برای افزایش سطح خودت میتونی با من چت کنی, مأmوریت‌ها رو انجام بدی یا بازی کنی. هر فعالیتی امتیاز داره!"],
+            "یاد بگیر": ["حتما! می‌خوای چیزی رو بهم یاد بدی؟ فقط بگو 'یاد بگیر [سوال تو] جواب [جواب تو]' تا اون رو یاد بگیرم.", "آماده یادگیریم! برای آموزش به من از فرمت 'یاد بگیر [سوال] جواب [پاسخ]' استفاده کن."],
+            "تشکر": ["خواهش می‌کنم! همیشه در خدمتم.", "قابلی نداشت! خوشحالم که تونستم کمک کنم.", "خوشحالم که راضیت کردم! ^_^"],
+            "شروع": ["به شهر کانیلا خوش اومدی! من تینا هستم، دستیار مجازی این شهر. چطور می‌تونم کمکت کنم؟"]
+        };
+        
+        const emotionalResponses = {
+            "خوشحال": ["چه عالی! خوشحالم که حالت خوبه.", "این عالیه! دلت خوش بسه.", "خبر خوبیه! باعث خوشحالیم شده."],
+            "ناراحت": ["اوه, متاسفم. چی شده؟ میخوای درموردش حرف بزنی؟", "ای بابا! امیدوارم بهتر بشی.", "میتونم کاری کنم حالتو besser بشه؟"],
+            "عصبانی": ["آهان! یه نفست عمیق بکش. میتونی بهم بگی چی شده؟", "عصبانیت طبیعی هست, اما سعی کن آروم بشی."],
+            "خسته": ["استراحت کن! یه کم استراحت به همه چیز رو بهتر میکنه.", "شهر کانیla جای خوبیه برای استراحت. یه کم قدم بزن!"],
+            "حوصل": ["بیا با هم چت کنیم! یا شاید یه بازی حدس عدد حالتو عوض کنه؟", "میخوای برات داستان بگم یا یه چیزی رو یادت بدم؟"]
+        };
+        
+        function loadUserData() {
+            const savedData = localStorage.getItem('tina_userData');
+            if (savedData) {
+                const parsedData = JSON.parse(savedData);
+                Object.assign(userMemory, parsedData);
+                updateUserLevelDisplay();
+            }
+            const learned = localStorage.getItem('tina_learned');
+            if (learned) userMemory.learnedResponses = JSON.parse(learned);
+            
+            // بارگذاری تنظیمات شخصی‌سازی
+            const botName = localStorage.getItem('tina_botName');
+            if (botName) {
+                userMemory.preferences.botName = botName;
+                botNameDisplay.textContent = botName + " (Tina)";
+            }
+            
+            const speechStyle = localStorage.getItem('tina_speechStyle');
+            if (speechStyle) userMemory.preferences.speechStyle = speechStyle;
+        }
+        
+        function saveUserData() {
+            localStorage.setItem('tina_userData', JSON.stringify(userMemory));
+            localStorage.setItem('tina_learned', JSON.stringify(userMemory.learnedResponses));
+        }
+        
+        function loadChatHistory() {
+            if (localStorage.getItem('autoSave') !== 'disabled') {
+                const chatHistory = localStorage.getItem('tina_chatHistory');
+                if (chatHistory) {
+                    chatContainer.innerHTML = chatHistory;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+            }
+        }
+        
+        function saveChatHistory() {
+            if (localStorage.getItem('autoSave') !== 'disabled') {
+                localStorage.setItem('tina_chatHistory', chatContainer.innerHTML);
+            }
+        }
+        
+        function loadQuests() {
+            const savedQuests = localStorage.getItem('tina_quests');
+            if (savedQuests) {
+                const quests = JSON.parse(savedQuests);
+                userMemory.activeQuests = quests;
+            }
+        }
+        
+        function saveQuests() {
+            localStorage.setItem('tina_quests', JSON.stringify(userMemory.activeQuests));
+        }
+        
+        function initDailyQuests() {
+            const lastReset = localStorage.getItem('tina_questsReset');
+            const today = new Date().toDateString();
+            
+            if (!lastReset || lastReset !== today) {
+                userMemory.activeQuests = [...questsSystem.dailyQuests];
+                localStorage.setItem('tina_questsReset', today);
+                saveQuests();
+                showNotification('ماموریت‌های روزانه جدیدی برای شما فعال شد!');
+            }
+        }
+        
+        function showPage(pageId) {
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('pricesPage').style.display = 'none';
+            document.getElementById('mapPage').style.display = 'none';
+            document.getElementById('settingsPage').style.display = 'none';
+            document.getElementById('aboutPage').style.display = 'none';
+            document.getElementById('shopPage').style.display = 'none';
+            document.getElementById('questsPage').style.display = 'none';
+            document.getElementById('gamePage').style.display = 'none';
+            document.getElementById('miniGamesPage').style.display = 'none';
+            
+            menu.classList.remove('show');
+            
+            document.querySelector('.suggestion-chips').style.display = pageId === 'home' ? 'flex' : 'none';
+            document.querySelector('.input-container').style.display = pageId === 'home' ? 'flex' : 'none';
+            
+            if (pageId === 'home') {
+                document.getElementById('chatContainer').style.display = 'flex';
+            } else if (pageId === 'prices') {
+                document.getElementById('pricesPage').style.display = 'flex';
+                renderItems('all');
+            } else if (pageId === 'map') {
+                document.getElementById('mapPage').style.display = 'flex';
+            } else if (pageId === 'settings') {
+                document.getElementById('settingsPage').style.display = 'flex';
+            } else if (pageId === 'about') {
+                document.getElementById('aboutPage').style.display = 'flex';
+            } else if (pageId === 'shop') {
+                document.getElementById('shopPage').style.display = 'flex';
+            } else if (pageId === 'quests') {
+                document.getElementById('questsPage').style.display = 'flex';
+                renderQuests();
+            } else if (pageId === 'miniGames') {
+                document.getElementById('miniGamesPage').style.display = 'flex';
+                document.querySelector('.games-container').style.display = 'grid';
+                document.getElementById('numberGameContainer').style.display = 'none';
+                document.getElementById('wordGameContainer').style.display = 'none';
+                document.getElementById('rpsGameContainer').style.display = 'none';
+                document.getElementById('adventureGameContainer').style.display = 'none';
+                document.getElementById('roleplayGameContainer').style.display = 'none';
+            }
+        }
+        
+        function renderItems(category) {
+            const itemsContainer = document.getElementById('itemsContainer');
+            itemsContainer.innerHTML = '';
+            
+            const filteredItems = category === 'all' 
+                ? itemPrices 
+                : itemPrices.filter(item => item.category === category);
+            
+            filteredItems.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+                itemCard.innerHTML = `
+                    <div class="item-icon">
+                        <i class="fas ${item.icon}"></i>
+                    </div>
+                    <div class="item-details">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">${item.price}</div>
+                        <div class="item-category">${getCategoryName(item.category)}</div>
+                    </div>
+                `;
+                
+                itemCard.addEventListener('click', () => showItemDetails(item));
+                itemsContainer.appendChild(itemCard);
+            });
+        }
+
+        function getCategoryName(category) {
+            const categories = {
+                'food': 'خوراکی',
+                'weapon': 'سلاح و زره',
+                'block': 'بلوک',
+                'tool': 'ابزار',
+                'seed': 'بذر و گل',
+                'special': 'لوازم خاص'
+            };
+            return categories[category] || 'دسته‌بندی نشده';
+        }
+
+        function showItemDetails(item) {
+            const modal = document.getElementById('itemModal');
+            const modalName = document.getElementById('modalName');
+            const modalPrice = document.getElementById('modalPrice');
+            const modalCategory = document.getElementById('modalCategory');
+            const modalDescription = document.getElementById('modalDescription');
+            const modalIcon = document.querySelector('.modal-icon i');
+            
+            modalName.textContent = item.name;
+            modalPrice.textContent = item.price;
+            modalCategory.textContent = getCategoryName(item.category);
+            modalDescription.textContent = item.description;
+            modalIcon.className = `fas ${item.icon}`;
+            
+            modal.style.display = 'flex';
+        }
+
+        document.getElementById('modalClose').addEventListener('click', () => {
+            document.getElementById('itemModal').style.display = 'none';
+        });
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const category = btn.getAttribute('data-category');
+                renderItems(category);
+            });
+        });
+
+        document.getElementById('itemSearch').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const itemsContainer = document.getElementById('itemsContainer');
+            itemsContainer.innerHTML = '';
+            
+            const filteredItems = itemPrices.filter(item => 
+                item.name.toLowerCase().includes(searchTerm) || 
+                item.description.toLowerCase().includes(searchTerm)
+            );
+            
+            filteredItems.forEach(item => {
+                const itemCard = document.createElement('div');
+                itemCard.className = 'item-card';
+                itemCard.innerHTML = `
+                    <div class="item-icon">
+                        <i class="fas ${item.icon}"></i>
+                    </div>
+                    <div class="item-details">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">${item.price}</div>
+                        <div class="item-category">${getCategoryName(item.category)}</div>
+                    </div>
+                `;
+                
+                itemCard.addEventListener('click', () => showItemDetails(item));
+                itemsContainer.appendChild(itemCard);
+            });
+        });
+        
+        function renderQuests() {
+            questsContainer.innerHTML = '';
+            
+            if (userMemory.activeQuests.length === 0) {
+                questsContainer.innerHTML = '<p>در حال حاضر هیچ مأموریت فعالی ندارید.</p>';
+                return;
+            }
+            
+            userMemory.activeQuests.forEach(quest => {
+                const progressPercent = (quest.progress / quest.goal) * 100;
+                const questElement = document.createElement('div');
+                questElement.className = 'quest-item';
+                questElement.innerHTML = `
+                    <div class="quest-title">
+                        <i class="fas fa-${quest.completed ? 'check-circle' : 'circle'}"></i>
+                        ${quest.title}
+                    </div>
+                    <div class="quest-description">${quest.description}</div>
+                    <div class="quest-reward">جایزه: ${quest.reward} امتیاز</div>
+                    <div class="quest-progress">
+                        <div class="progress-bar" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div style="margin-top: 5px; font-size: 12px;">پیشرفت: ${quest.progress}/${quest.goal}</div>
+                `;
+                
+                questsContainer.appendChild(questElement);
+            });
+        }
+        
+        function updateUserLevelDisplay() {
+            userLevelBadge.textContent = `سطح ${userMemory.userLevel}`;
+        }
+        
+        function increaseUserXP(amount) {
+            userMemory.userXP += amount;
+            
+            if (userMemory.userXP >= 100) {
+                userMemory.userLevel++;
+                userMemory.userXP = userMemory.userXP - 100;
+                
+                addMessage(`تبریک! شما به سطح ${userMemory.userLevel} رسیدید!`, 'bot');
+                tinaAvatar.classList.add('excited');
+                setTimeout(() => tinaAvatar.classList.remove('excited'), 2000);
+                
+                updateUserLevelDisplay();
+            }
+            
+            saveUserData();
+        }
+        
+        function updateQuests(type, amount = 1) {
+            let updated = false;
+            let completedQuest = null;
+            
+            userMemory.activeQuests.forEach(quest => {
+                if (quest.type === type && !quest.completed) {
+                    quest.progress += amount;
+                    if (quest.progress >= quest.goal) {
+                        quest.completed = true;
+                        completedQuest = quest;
+                    }
+                    updated = true;
+                }
+            });
+            
+            if (updated) {
+                saveQuests();
+                
+                if (completedQuest) {
+                    completeQuest(completedQuest);
+                }
+            }
+            
+            return updated;
+        }
+        
+        function completeQuest(quest) {
+            userMemory.completedQuests.push({
+                id: quest.id,
+                title: quest.title,
+                completedAt: new Date().toISOString(),
+                reward: quest.reward
+            });
+            
+            increaseUserXP(quest.reward);
+            
+            showNotification(`تبریک! ماموریت "${quest.title}" را کامل کردید و ${quest.reward} امتیاز دریافت کردید!`);
+            
+            if (document.getElementById('questsPage').style.display === 'flex') {
+                renderQuests();
+            }
+        }
+        
+        function showNotification(message) {
+            const notification = document.getElementById('questNotification');
+            const content = document.getElementById('notificationContent');
+            
+            content.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showActiveQuests() {
+            if (userMemory.activeQuests.length === 0) {
+                addMessage('شما در حال حاضر هیچ ماموریت فعالی ندارید. فردا ماموریت‌های جدیدی برایتان فعال خواهد شد.', 'bot');
+                return;
+            }
+            
+            addMessage('ماموریت‌های فعال شما:', 'bot');
+            
+            userMemory.activeQuests.forEach(quest => {
+                const progressPercent = (quest.progress / quest.goal) * 100;
+                const questMessage = `
+                    <strong>${quest.title}</strong>
+                    <br>${quest.description}
+                    <br>پیشرفت: ${quest.progress}/${quest.goal} (${Math.round(progressPercent)}%)
+                    <br>پاداش: ${quest.reward} امتیاز
+                `;
+                
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', 'quest-message');
+                messageElement.innerHTML = questMessage;
+                
+                const timeElement = document.createElement('div');
+                timeElement.classList.add('message-time');
+                timeElement.textContent = new Date().toLocaleTimeString('fa-IR');
+                
+                messageElement.appendChild(timeElement);
+                document.getElementById('chatContainer').appendChild(messageElement);
+            });
+            
+            document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
+        }
+        
+        function showMemory() {
+            if (userMemory.conversationHistory.length === 0) {
+                addMessage('هنوز خاطره‌ای بین ما ثبت نشده. بیا بیشتر باهم گفتگو کنیم!', 'bot');
+                return;
+            }
+            
+            addMessage('برخی از خاطرات ما با هم:', 'bot');
+            
+            const recentHistory = userMemory.conversationHistory.slice(-5);
+            
+            recentHistory.forEach(entry => {
+                const memoryMessage = `
+                    <strong>شما:</strong> ${entry.message}
+                    <br><strong>تینا:</strong> ${entry.response}
+                `;
+                
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', 'memory-message');
+                messageElement.innerHTML = memoryMessage;
+                
+                const timeElement = document.createElement('div');
+                timeElement.classList.add('message-time');
+                timeElement.textContent = new Date(entry.timestamp).toLocaleString('fa-IR');
+                
+                messageElement.appendChild(timeElement);
+                document.getElementById('chatContainer').appendChild(messageElement);
+            });
+            
+            document.getElementById('chatContainer').scrollTop = document.getElementById('chatContainer').scrollHeight;
+        }
+        
+        function addToHistory(message, response) {
+            userMemory.conversationHistory.push({
+                message,
+                response,
+                timestamp: new Date().toISOString()
+            });
+            
+            // افزودن به حافظه کوتاه مدت
+            userMemory.shortTermMemory.push({
+                message,
+                response
+            });
+            
+            // محدود کردن حافظه کوتاه مدت به 3 پیام
+            if (userMemory.shortTermMemory.length > 3) {
+                userMemory.shortTermMemory.shift();
+            }
+            
+            if (userMemory.conversationHistory.length > 50) {
+                userMemory.conversationHistory.shift();
+            }
+            
+            saveUserData();
+        }
+        
+                function advancedAIResponse(message) {
+            const lowerMessage = message.toLowerCase();
+    
+            // تشخیص احساسات پیشرفته
+            const emotionPatterns = {
+                'happy': ['خوشحالم', 'شادم', 'خوشهالم', 'عالیه', 'عالی'],
+                'sad': ['ناراحتم', 'غمگینم', 'افسرده', 'دلگیر'],
+                'angry': ['عصبانی', 'خشمگین', 'از دستش دادم'],
+                'excited': ['هیجان‌زده', 'هیجانی', 'هیجان']
+            };
+    
+            for (const [emotion, patterns] of Object.entries(emotionPatterns)) {
+                if (patterns.some(pattern => lowerMessage.includes(pattern))) {
+                    return generateEmotionalResponse(emotion, message);
+                }
+            }
+    
+            return generateResponse(message);
+        }
+
+        function generateEmotionalResponse(emotion, message) {
+            const responses = {
+                'happy': [
+                    "چه عالی! خوشحالم که حال تو خوبه 😊",
+                    "این خبر واقعاً باعث خوشحالیم شد!",
+                    "وای! واقعاً خوشحال شدم از شنیدن این خبر!"
+                ],
+                'sad': [
+                    "متأسفم که احساس ناراحتی می‌کنی. دوست داری درموردش صحبت کنیم؟",
+                    "همیشه کنارت هستم. اگر نیاز به صحبت داری، من اینجا هستم.",
+                    "بعضی روزها واقعاً سخت می‌گذره. امیدوارم فردا روز بهتری داشته باشی."
+                ],
+                'angry': [
+                    "به نظر می‌رسه چیزی تو رو عصبانی کرده. می‌خوای درموردش حرف بزنی؟",
+                    "یه نفس عمیق بکش. گاهی صحبت کردن کمک می‌کنه.",
+                    "عصبانیت یه احساس طبیعیه، اما مهم اینه که چطور مدیریتش کنیم."
+                ],
+                'excited': [
+                    "وای! منم هیجان‌زده شدم! 🎉",
+                    "چه خبر خوبی! واقعاً هیجان‌انگیزه!",
+                    "این فوق‌العاده‌ست! منم با تو هیجان‌زده شدم!"
+                ]
+            };
+    
+            const randomResponse = responses[emotion][Math.floor(Math.random() * responses[emotion].length)];
+            return applySpeechStyle(randomResponse);
+        }
+        
+        function generateResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // بررسی حافظه کوتاه مدت برای ارجاع به پیام‌های قبلی
+            if (userMemory.shortTermMemory.length > 0) {
+                const lastMessage = userMemory.shortTermMemory[userMemory.shortTermMemory.length - 1].message;
+                
+                if (lowerMessage.includes("اون") || lowerMessage.includes("این") || lowerMessage.includes("همون")) {
+                    // بررسی آیتم‌های ذکر شده در مکالمات قبلی
+                    for (const item of itemPrices) {
+                        if (lastMessage.includes(item.name) && (lowerMessage.includes("قیمت") || lowerMessage.includes("چنده") || lowerMessage.includes("هزینه"))) {
+                            return `قیمت ${item.name} در فروشگاه کانیلا ${item.price} است. میتونم کمک دیگه‌ای بکنم؟`;
+                        }
+                    }
+                }
+            }
+            
+            if (lowerMessage.includes("یاد بگیر")) {
+                const learnMatch = message.match(/یاد بگیر\s+(.+)\s+جواب\s+(.+)/);
+                if (learnMatch && learnMatch.length >= 3) {
+                    const question = learnMatch[1].trim().toLowerCase();
+                    const answer = learnMatch[2].trim();
+                    
+                    userMemory.learnedResponses[question] = answer;
+                    saveUserData();
+                    
+                    return `ممنون! یاد گرفتم. دفعه بعد که بپرسی "${learnMatch[1].trim()}"، میگم "${answer}"`;
+                } else {
+                    return "فرمت آموزش رو درست متوجه نشدم. لطفاً اینطوری بگو: 'یاد بگیر [سوال تو] جواب [جواب تو]'";
+                }
+            }
+            
+            for (const learnedQuestion in userMemory.learnedResponses) {
+                if (lowerMessage.includes(learnedQuestion.toLowerCase())) {
+                    return userMemory.learnedResponses[learnedQuestion];
+                }
+            }
+            
+            if (lowerMessage.includes("قیمت") || lowerMessage.includes("چنده") || lowerMessage.includes("هزینه")) {
+                updateQuests('price_check');
+                
+                for (const item of itemPrices) {
+                    if (lowerMessage.includes(item.name.toLowerCase())) {
+                        return `قیمت ${item.name} در فروشگاه کانیلا ${item.price} است. میتونم کمک دیگه‌ای بکنم؟`;
+                    }
+                }
+                return "متأسفم، اطلاعات قیمت برای این آیتم را ندارم. لطفاً آیتم دیگری را جویا شوید یا از منوی اصلی گزینه 'قیمت آیتم‌ها' را انتخاب کنید.";
+            }
+            
+            for (const key in predefinedResponses) {
+                if (lowerMessage.includes(key.toLowerCase())) {
+                    if (key === "سلام") {
+                        updateQuests('conversation');
+                    }
+                    const responses = predefinedResponses[key];
+                    return applySpeechStyle(responses[Math.floor(Math.random() * responses.length)]);
+                }
+            }
+            
+            for (const emotion in emotionalResponses) {
+                if (lowerMessage.includes(emotion)) {
+                    const responses = emotionalResponses[emotion];
+                    return applySpeechStyle(responses[Math.floor(Math.random() * responses.length)]);
+                }
+            }
+            
+            const generalResponses = [
+                "جالب بود! میتونی بیشتر توضیح بدی؟",
+                "متوجه نشدم، میتونی به شکل دیگری بپرسی؟",
+                "هنوز این قابلیت رو ندارم، اما به زودی اضافه میشه!",
+                "شهر کانیلا جای خیلی باحالیه! حتما ازش دیدن کن.",
+                "میتونی در مورد قیمت آیتم‌ها ازم بپرسی یا از ویژگی‌های شهر کانیla بدونى.",
+                "چیزی که گفتی رو متوجه نشدم. میخوای در مورد چیز دیگه‌ای بپرسی؟",
+                "برای اطلاعات بیشتر میتونی از منوی اصلی استفاده کنی و بخش‌های مختلف رو بررسی کنی.",
+                "عجب! راستی میدونی میتونی چیزای جدید بهم یاد بدی؟ فقط بگو 'یاد بگیر [سوال] جواب [جواب]'",
+                "همینطور ادامه بده، داره جالب میشه!",
+                "نظر جالبی بود. دوست داری در موردش بیشتر حرف بزنیم؟"
+            ];
+            
+            updateQuests('conversation');
+            return applySpeechStyle(generalResponses[Math.floor(Math.random() * generalResponses.length)]);
+        }
+        
+        function applySpeechStyle(text) {
+            switch(userMemory.preferences.speechStyle) {
+                case "formal":
+                    return text.replace(/می‌تونم/gi, "قادرم")
+                              .replace(/میتونی/gi, "شما می‌توانید")
+                              .replace(/تو/gi, "شما")
+                              .replace(/من/gi, "این جانب");
+                case "friendly":
+                    return text.replace(/سلام/gi, "سلام دوست من")
+                              .replace(/ممنون/gi, "مرسی")
+                              .replace(/خداحافظ/gi, "خداوفق")
+                              + " 😊";
+                case "funny":
+                    return text + " " + ["😂", "🤣", "😜", "😎"][Math.floor(Math.random() * 4)];
+                case "wise":
+                    return "فرزندم، " + text.toLowerCase() + ". زیرا که خرد برتر از توانایی است.";
+                default:
+                    return text;
+            }
+        }
+        
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === "") return;
+            
+            addMessage(message, 'user');
+            userInput.value = "";
+            
+            increaseUserXP(5);
+            
+            tinaAvatar.classList.add('happy');
+            setTimeout(() => tinaAvatar.classList.remove('happy'), 1000);
+            
+            menu.classList.remove('show');
+            
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = advancedAIResponse(message);
+                addMessage(response, 'bot');
+                addToHistory(message, response);
+                
+                saveChatHistory();
+            }, 1000);
+        }
+        
+        function suggestionChip(text) {
+            userInput.value = text;
+            sendMessage();
+        }
+        
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+            messageElement.textContent = text;
+            
+            const timeElement = document.createElement('div');
+            timeElement.classList.add('message-time');
+            timeElement.textContent = new Date().toLocaleTimeString('fa-IR');
+            
+            messageElement.appendChild(timeElement);
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'block';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+        
+        // توابع مربوط به بازی‌ها
+        function startNumberGame() {
+            document.querySelector('.games-container').style.display = 'none';
+            document.getElementById('numberGameContainer').style.display = 'block';
+            initNumberGame();
+        }
+        
+        function startWordGame() {
+            document.querySelector('.games-container').style.display = 'none';
+            document.getElementById('wordGameContainer').style.display = 'block';
+            initWordGame();
+        }
+        
+        function startRockPaperScissors() {
+            document.querySelector('.games-container').style.display = 'none';
+            document.getElementById('rpsGameContainer').style.display = 'block';
+            resetRPS();
+        }
+        
+        function startAdventureGame() {
+            document.querySelector('.games-container').style.display = 'none';
+            document.getElementById('adventureGameContainer').style.display = 'block';
+            initAdventureGame();
+        }
+        
+        function startRoleplayAdventure() {
+            document.querySelector('.games-container').style.display = 'none';
+            document.getElementById('roleplayGameContainer').style.display = 'block';
+            initRoleplayAdventure();
+        }
+        
+        function backToGames() {
+            document.getElementById('numberGameContainer').style.display = 'none';
+            document.getElementById('wordGameContainer').style.display = 'none';
+            document.getElementById('rpsGameContainer').style.display = 'none';
+            document.getElementById('adventureGameContainer').style.display = 'none';
+            document.getElementById('roleplayGameContainer').style.display = 'none';
+            document.querySelector('.games-container').style.display = 'grid';
+        }
+        
+        function initNumberGame() {
+            randomNumber = Math.floor(Math.random() * 100) + 1;
+            guessesLeft = 8;
+            gameScore = 0;
+            
+            document.getElementById('gameScore').textContent = gameScore;
+            document.getElementById('guessesLeft').textContent = guessesLeft;
+            document.getElementById('gameResult').textContent = '';
+            document.getElementById('guessInput').value = '';
+            document.getElementById('guessInput').disabled = false;
+            document.querySelector('#numberGameContainer .game-button').disabled = false;
+        }
+        
+                function checkGuess() {
+            const guessInput = document.getElementById('guessInput');
+            const guess = parseInt(guessInput.value);
+            const gameResult = document.getElementById('gameResult');
+            
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                gameResult.textContent = 'لطفاً یک عدد بین 1 تا 100 وارد کنید!';
+                return;
+            }
+            
+            guessesLeft--;
+            document.getElementById('guessesLeft').textContent = guessesLeft;
+            
+            if (guess === randomNumber) {
+                gameResult.textContent = 'آفرین! عدد را درست حدس زدی!';
+                gameScore += guessesLeft * 10 + 50;
+                document.getElementById('gameScore').textContent = gameScore;
+                
+                increaseUserXP(20);
+                
+                // اضافه کردن افکت‌های بصری
+                applyWinGlow(gameResult);
+                createConfetti(document.getElementById('numberGameContainer'));
+                showVictoryAnimation();
+                
+                guessInput.disabled = true;
+                document.querySelector('#numberGameContainer .game-button').disabled = true;
+            } else if (guessesLeft === 0) {
+                gameResult.textContent = `متأسفم! فرصت شما تمام شد. عدد صحیح ${randomNumber} بود.`;
+                // اضافه کردن افکت‌های بصری
+                applyLoseShake(gameResult);
+                
+                guessInput.disabled = true;
+                document.querySelector('#numberGameContainer .game-button').disabled = true;
+            } else if (guess < randomNumber) {
+                gameResult.textContent = 'عدد بزرگ‌تر است!';
+            } else {
+                gameResult.textContent = 'عدد کوچک‌تر است!';
+            }
+        }
+        
+        function initWordGame() {
+            // انتخاب یک کلمه تصادفی از لیست
+            const randomIndex = Math.floor(Math.random() * wordGameWords.length);
+            currentWord = wordGameWords[randomIndex].word;
+            
+            // ایجاد نسخه پنهان شده از کلمه
+            hiddenWord = currentWord.split('').map(char => char === ' ' ? ' ' : '_').join('');
+            usedLetters = [];
+            wordGameScore = 100;
+            
+            // به روزرسانی نمایش
+            document.getElementById('wordDisplay').textContent = hiddenWord;
+            document.getElementById('usedLetters').textContent = 'هیچ';
+            document.getElementById('wordGameScore').textContent = wordGameScore;
+            document.getElementById('wordGameResult').textContent = '';
+            document.getElementById('wordInput').value = '';
+        }
+        
+        function checkWordGuess() {
+            const guessInput = document.getElementById('wordInput');
+            const guess = guessInput.value.trim();
+            const gameResult = document.getElementById('wordGameResult');
+            
+            if (!guess) {
+                gameResult.textContent = 'لطفاً یک حرف یا کلمه وارد کنید!';
+                return;
+            }
+            
+            if (guess.length === 1) {
+                // حدس یک حرف
+                if (usedLetters.includes(guess)) {
+                    gameResult.textContent = 'این حرف را قبلاً استفاده کرده‌اید!';
+                    return;
+                }
+                
+                usedLetters.push(guess);
+                document.getElementById('usedLetters').textContent = usedLetters.join('، ');
+                
+                let found = false;
+                let newHiddenWord = '';
+                
+                for (let i = 0; i < currentWord.length; i++) {
+                    if (currentWord[i] === guess) {
+                        newHiddenWord += guess;
+                        found = true;
+                    } else {
+                        newHiddenWord += hiddenWord[i];
+                    }
+                }
+                
+                hiddenWord = newHiddenWord;
+                document.getElementById('wordDisplay').textContent = hiddenWord;
+                
+                if (!found) {
+                    wordGameScore -= 10;
+                    document.getElementById('wordGameScore').textContent = wordGameScore;
+                    gameResult.textContent = 'حرف مورد نظر در کلمه وجود ندارد!';
+                } else {
+                    gameResult.textContent = 'آفرین! این حرف در کلمه وجود دارد.';
+                }
+                
+                // بررسی برنده شدن
+                if (!hiddenWord.includes('_')) {
+                    gameResult.textContent = `تبریک! شما برنده شدید. کلمه "${currentWord}" بود و ${wordGameScore} امتیاز کسب کردید!`;
+                    increaseUserXP(wordGameScore / 5);
+                    // اضافه کردن افکت‌های بصری
+                    applyWinGlow(document.getElementById('wordGameResult'));
+                    createConfetti(document.getElementById('wordGameContainer'));
+                    showVictoryAnimation();
+                    guessInput.disabled = true;
+                }
+                
+            } else {
+                // حدس کل کلمه
+                if (guess === currentWord) {
+                    gameResult.textContent = `تبریک! شما برنده شدید. کلمه "${currentWord}" بود و ${wordGameScore} امتیاز کسب کردید!`;
+                    increaseUserXP(wordGameScore / 5);
+                    // اضافه کردن افکت‌های بصری
+                    applyWinGlow(document.getElementById('wordGameResult'));
+                    createConfetti(document.getElementById('wordGameContainer'));
+                    showVictoryAnimation();
+                    guessInput.disabled = true;
+                } else {
+                    wordGameScore -= 20;
+                    document.getElementById('wordGameScore').textContent = wordGameScore;
+                    gameResult.textContent = 'کلمه وارد شده صحیح نیست!';
+                    
+                    if (wordGameScore <= 0) {
+                        gameResult.textContent = `متأسفم! بازی را باختید. کلمه صحیح "${currentWord}" بود.`;
+                        // اضافه کردن افکت‌های بصری
+                        applyLoseShake(document.getElementById('wordGameResult'));
+                        guessInput.disabled = true;
+                    }
+                }
+            }
+            
+            guessInput.value = '';
+            guessInput.focus();
+        }
+        
+        function getHint() {
+            if (wordGameScore < 15) {
+                document.getElementById('wordGameResult').textContent = 'امتیاز کافی برای دریافت راهنما ندارید!';
+                return;
+            }
+            
+            wordGameScore -= 15;
+            document.getElementById('wordGameScore').textContent = wordGameScore;
+            
+            // پیدا کردن یک حرف که هنوز حدس زده نشده
+            let availableLetters = [];
+            for (let i = 0; i < currentWord.length; i++) {
+                if (hiddenWord[i] === '_' && !usedLetters.includes(currentWord[i])) {
+                    availableLetters.push(currentWord[i]);
+                }
+            }
+            
+            if (availableLetters.length > 0) {
+                const randomHint = availableLetters[Math.floor(Math.random() * availableLetters.length)];
+                document.getElementById('wordGameResult').textContent = `راهنما: حرف "${randomHint}" در کلمه وجود دارد.`;
+            } else {
+                document.getElementById('wordGameResult').textContent = 'همه حروف کشف شده‌اند!';
+            }
+        }
+        
+        function playRPS(playerChoice, event) {
+            const choices = ['سنگ', 'کاغذ', 'قیچی'];
+            const botChoice = choices[Math.floor(Math.random() * choices.length)];
+            const resultElement = document.getElementById('rpsGameResult');
+            
+            let result = '';
+            
+            if (playerChoice === botChoice) {
+                result = 'مساوی شد! هر دو ' + playerChoice + ' انتخاب کردید.';
+                rpsDraws++;
+            } else if (
+                (playerChoice === 'سنگ' && botChoice === 'قیچی') ||
+                (playerChoice === 'کاغذ' && botChoice === 'سنگ') ||
+                (playerChoice === 'قیچی' && botChoice === 'کاغذ')
+            ) {
+                result = 'شما برنده شدید! ' + playerChoice + ' بر ' + botChoice + ' غلبه می‌کند.';
+                rpsWins++;
+                increaseUserXP(10);
+                // اضافه کردن افکت‌های بصری
+                applyWinGlow(resultElement);
+                createParticles(event.pageX, event.pageY, '#4cd964', document.getElementById('rpsGameContainer'));
+            } else {
+                result = 'من برنده شدم! ' + botChoice + ' بر ' + playerChoice + ' غلبه می‌کند.';
+                rpsLosses++;
+                // اضافه کردن افکت‌های بصری
+                applyLoseShake(resultElement);
+                createParticles(event.pageX, event.pageY, '#ff6b6b', document.getElementById('rpsGameContainer'));
+            }
+            
+            resultElement.textContent = result;
+            
+            document.getElementById('wins').textContent = rpsWins;
+            document.getElementById('losses').textContent = rpsLosses;
+            document.getElementById('draws').textContent = rpsDraws;
+        }
+        
+        function resetRPS() {
+            rpsWins = 0;
+            rpsLosses = 0;
+            rpsDraws = 0;
+            
+            document.getElementById('wins').textContent = rpsWins;
+            document.getElementById('losses').textContent = rpsLosses;
+            document.getElementById('draws').textContent = rpsDraws;
+            document.getElementById('rpsGameResult').textContent = '';
+        }
+        
+        function initAdventureGame() {
+            adventureState = {
+                stage: 0,
+                health: 100,
+                gold: 0,
+                items: []
+            };
+            
+            updateAdventureGame();
+        }
+        
+        function updateAdventureGame() {
+            const storyElement = document.getElementById('adventureStory');
+            const optionsElement = document.getElementById('adventureOptions');
+            
+            optionsElement.innerHTML = '';
+            
+            switch(adventureState.stage) {
+                case 0:
+                    storyElement.innerHTML = '<p>شما در ورودی شهر کانیلا ایستاده‌اید. هوا کم کم تاریک می‌شود و باید تصمیم بگیرید که چه کاری انجام دهید.</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    addAdventureOption('به داخل شهر بروید', '1');
+                    addAdventureOption('به اطراف شهر نگاهی بیندازید', '2');
+                    addAdventureOption('شب را بیرون شهر بمانید', '3');
+                    break;
+                    
+                case 1:
+                    storyElement.innerHTML = '<p>شما وارد شهر شده‌اید. مردم در حال انجام کارهای روزمره خود هستند. یک فروشگاه و یک مسافرخانه می بینید.</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    addAdventureOption('به فروشگاه بروید', '4');
+                    addAdventureOption('به مسافرخانه بروید', '5');
+                    addAdventureOption('به میدان شهر بروید', '6');
+                    break;
+                    
+                case 2:
+                    storyElement.innerHTML = '<p>در اطراف شهر به جستجو پرداخته‌اید و یک کیف پول حاوی 20 سکه طلا پیدا کرده‌اید!</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    adventureState.gold += 20;
+                    addAdventureOption('به شهر برگردید', '1');
+                    break;
+                    
+                case 3:
+                    storyElement.innerHTML = '<p>شب را بیرون شهر مانده‌اید. هوا سرد است و شما 10 واحد از سلامتی خود را از دست داده‌اید. اما صبح شده و می‌توانید به شهر وارد شوید.</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    adventureState.health -= 10;
+                    addAdventureOption('به شهر وارد شوید', '1');
+                    break;
+                    
+                case 4:
+                    storyElement.innerHTML = '<p>وارد فروشگاه شده‌اید. فروشنده به شما خوش آمد می‌گوید.</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    if (adventureState.gold >= 10) {
+                        addAdventureOption('یک شمشیر چوبی بخرید (10 طلا)', '7');
+                    }
+                    if (adventureState.gold >= 5) {
+                        addAdventureOption('یک سیب بخرید (5 طلا)', '8');
+                    }
+                    addAdventureOption('از فروشگاه خارج شوید', '1');
+                    break;
+                    
+                case 5:
+                    storyElement.innerHTML = '<p>وارد مسافرخانه شده‌اید. صاحب مسافرخانه یک اتاق به شما پیشنهاد می‌دهد.</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    if (adventureState.gold >= 15) {
+                        addAdventureOption('یک اتاق اجاره کنید (15 طلا)', '9');
+                    }
+                    addAdventureOption('از مسافرخانه خارج شوید', '1');
+                    break;
+                    
+                case 6:
+                    storyElement.innerHTML = '<p>وارد میدان شهر شده‌اید. مردم در حال خرید و فروش هستند. یک نقاش در حال کشیدن تابلوهای زیباست.</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    addAdventureOption('با نقاش صحبت کنید', '10');
+                    addAdventureOption('به غرفه‌های دیگر نگاه کنید', '11');
+                    addAdventureOption('به خیابان اصلی برگردید', '1');
+                    break;
+                    
+                case 7:
+                    storyElement.innerHTML = '<p>شمشیر چوبی خریدید! حالا می‌توانید از خود در برابر خطرات دفاع کنید.</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    adventureState.gold -= 10;
+                    adventureState.items.push('شمشیر چوبی');
+                    addAdventureOption('به فروشگاه ادامه دهید', '4');
+                    addAdventureOption('از فروشگاه خارج شوید', '1');
+                    break;
+                    
+                case 8:
+                    storyElement.innerHTML = '<p>سیب خریدید و 20 واحد به سلامتی شما اضافه شد!</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    adventureState.gold -= 5;
+                    adventureState.health = Math.min(adventureState.health + 20, 100);
+                    addAdventureOption('به فروشگاه ادامه دهید', '4');
+                    addAdventureOption('از فروشگاه خارج شوید', '1');
+                    break;
+                    
+                case 9:
+                    storyElement.innerHTML = '<p>اتاقی اجاره کردید و یک شب استراحت کردید. سلامتی شما کامل شد!</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    adventureState.gold -= 15;
+                    adventureState.health = 100;
+                    addAdventureOption('به مسافرخانه ادامه دهید', '5');
+                    addAdventureOption('از مسافرخانه خارج شوید', '1');
+                    break;
+                    
+                case 10:
+                    storyElement.innerHTML = '<p>نقاش به شما پیشنهاد می‌دهد که در ازای 5 سکه طلا پرتره شما را بکشد.</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    if (adventureState.gold >= 5) {
+                        addAdventureOption('پذیرفتن پیشنهاد نقاش (5 طلا)', '12');
+                    }
+                    addAdventureOption('رد کردن پیشنهاد و بازگشت', '6');
+                    break;
+                    
+                case 11:
+                    storyElement.innerHTML = '<p>در میان غرفه‌ها به جستجو پرداختید و یک سکه طلا پیدا کردید!</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    adventureState.gold += 1;
+                    addAdventureOption('به جستجو ادامه دهید', '11');
+                    addAdventureOption('بازگشت به میدان', '6');
+                    break;
+                    
+                case 12:
+                    storyElement.innerHTML = '<p>نقاش پرتره زیبایی از شما کشید! شما این اثر هنری را به عنوان یادگاری نگه می‌دارید.</p>' +
+                                             '<p>سلامتی: ' + adventureState.health + ' | طلا: ' + adventureState.gold + '</p>';
+                    
+                    adventureState.gold -= 5;
+                    adventureState.items.push('پرتره نقاشی شده');
+                    increaseUserXP(30);
+                    addAdventureOption('بازگشت به میدان', '6');
+                    break;
+            }
+        }
+        
+        function addAdventureOption(text, nextStage) {
+            const optionsElement = document.getElementById('adventureOptions');
+            const option = document.createElement('div');
+            option.className = 'adventure-option';
+            option.textContent = text;
+            option.onclick = function() {
+                adventureState.stage = parseInt(nextStage);
+                updateAdventureGame();
+            };
+            optionsElement.appendChild(option);
+        }
+        
+        function initRoleplayAdventure() {
+            roleplayState = {
+                character: 'explorer',
+                stage: 0,
+                completed: false
+            };
+            
+            updateRoleplayGame();
+        }
+        
+        function updateRoleplayGame() {
+            const storyElement = document.getElementById('roleplayStory');
+            const optionsElement = document.getElementById('roleplayOptions');
+            const titleElement = document.getElementById('roleplayTitle');
+            
+            optionsElement.innerHTML = '';
+            
+            // تغییر حالت تینا برای نقش‌آفرینی
+            tinaAvatar.classList.add('roleplay');
+            
+            if (roleplayState.character === 'explorer') {
+                titleElement.textContent = 'ماجراجویی با کاوشگر قدیمی';
+                
+                switch(roleplayState.stage) {
+                    case 0:
+                        storyElement.innerHTML = '<p>من "الیور" هستم، یک کاوشگر قدیمی که سال‌هاست در حال کشف اسرار شهر کانیلا هستم. می‌بینم که تو هم روحیه ماجراجویی داری. می‌خوای با من همراه بشی و به کشف یک راز قدیمی کمک کنی؟</p>';
+                        addRoleplayOption('بله، حتما! من عاشق ماجراجویی هستم.', '1');
+                        addRoleplayOption('باید اول بیشتر بدونم چه کاری می‌خوایم انجام بدیم.', '2');
+                        break;
+                        
+                    case 1:
+                        storyElement.innerHTML = '<p>عالیه! من دارم به دنبال گنج افسانه‌ای کانیلا می‌گردم. طبق افسانه‌ها، این گنج در معبدی پنهان شده که زیر شهر قرار داره. اولین قدم پیدا کردن نقشه معبد هست.</p>';
+                        addRoleplayOption('چطور می‌تونیم نقشه رو پیدا کنیم؟', '3');
+                        break;
+                        
+                    case 2:
+                        storyElement.innerHTML = '<p>منظورم اینه که می‌خوایم بریم به دنبال گنج افسانه‌ای کانیلا. می‌دونی، گنجی که نسل‌هاست کسی اون رو پیدا نکرده. اما من سرنخ‌هایی دارم که می‌تونه ما رو به اون برسونه.</p>';
+                        addRoleplayOption('خب، به نظر جالب میاد. بریم دنبالش!', '1');
+                        addRoleplayOption('خطرناک نیست؟ ممکنه با چه چیزایی روبرو بشیم؟', '4');
+                        break;
+                        
+                    case 3:
+                        storyElement.innerHTML = '<p>من شنیدم که نقشه در کتابخانه شهر نگهداری می‌شه. اما کتابدار به هر کسی اجازه دسترسی به اون رو نمی‌ده. باید یک راهی پیدا کنیم که کتابدار رو متقاعد کنیم یا بدون اطلاع او نقشه رو ببینیم.</p>';
+                        addRoleplayOption('بیایید مستقیم بریم و از کتابدار اجازه بگیریم.', '5');
+                        addRoleplayOption('شاید بهتر باشه شبانه به کتابخانه بریم.', '6');
+                        break;
+                        
+                    case 4:
+                        storyElement.innerHTML = '<p>البته که خطراتی وجود داره. ممکنه با تله‌های قدیمی، موجودات زیرزمینی یا حتی محافظان معبد روبرو بشیم. اما من سال‌ها تجربه دارم و می‌تونم از تو محافظت کنم. علاوه بر این، پاداش این ماجراجویی خیلی ارزشمنده!</p>';
+                        addRoleplayOption('خب، قبول کردم. بریم دنبال گنج!', '1');
+                        addRoleplayOption('بذار اول یکم بیشتر فکر کنم.', '0');
+                        break;
+                        
+                    case 5:
+                        storyElement.innerHTML = '<p>به کتابخانه رفتیم و با کتابدار صحبت کردیم. او ابتدا مخالفت کرد اما وقتی فهمید که من "الیور" هستم و قصد تحقیقات علمی دارم، قبول کرد که نقشه رو به ما نشون بده. نقشه رو دیدیم و موقعیت تقریبی معبد رو فهمیدیم.</p>';
+                        addRoleplayOption('عالیه! حالا بریم به سمت معبد.', '7');
+                        break;
+                        
+                    case 6:
+                        storyElement.innerHTML = '<p>شبانه به کتابخانه نفوذ کردیم. من توانستم قفل در رو باز کنم و به داخل بریم. نقشه رو پیدا کردیم و از رویش یک کپی برداشتیم. اما متأسفانه نگهبان ما رو دید و مجبور شدیم فرار کنیم!</p>';
+                        addRoleplayOption('حداقل نقشه رو داریم. بریم به سمت معبد!', '7');
+                        break;
+                        
+                    case 7:
+                        storyElement.innerHTML = '<p>به ورودی معبد رسیدیم که در دل کوه پنهان شده. یک در سنگی بزرگ با نشانه‌های عجیب می بینیم. به نظر می‌رسه برای باز کردن در باید معما حل کنیم.</p>' +
+                                                 '<p>روی در نوشته شده:من شهر ها را دارم ، اما خانه ای ندارم؛ کوه ها را دارم ، اما درخت ندارم؛ آب دارم، اما ماهی ندارم. من چه هستم؟"</p>';
+                        addRoleplayOption('نقشه', '8');
+                        addRoleplayOption('زمین', '9');
+                        addRoleplayOption('جهان', '10');
+                        break;
+                        
+                    case 8:
+                        storyElement.innerHTML = '<p>درست حدس زدی! جواب "نقشه" بود. در به آرامی باز می‌شود و راهی تاریک به داخل معبد پیش رویمان قرار می‌گیرد.</p>';
+                        roleplayState.stage = 11;
+                        updateRoleplayGame();
+                        break;
+                        
+                    case 9:
+                        storyElement.innerHTML = '<p>نه، جواب زمین نیست. باید دوباره فکر کنیم.</p>';
+                        addRoleplayOption('نقشه', '8');
+                        addRoleplayOption('جهان', '10');
+                        break;
+                        
+                    case 10:
+                        storyElement.innerHTML = '<p>نه، جواب جهان نیست. باید دوباره فکر کنیم.</p>';
+                        addRoleplayOption('نقشه', '8');
+                        addRoleplayOption('زمین', '9');
+                        break;
+                        
+                    case 11:
+                        storyElement.innerHTML = '<p>وارد معبد شدیم. راهروی تاریکی پیش رویمان است که به چندین راه تقسیم می‌شود. کدام مسیر را انتخاب می‌کنی؟</p>';
+                        addRoleplayOption('مسیر سمت چپ', '12');
+                        addRoleplayOption('مسیر سمت راست', '13');
+                        addRoleplayOption('مسیر مستقیم', '14');
+                        break;
+                        
+                    case 12:
+                        storyElement.innerHTML = '<p>مسیر سمت چپ را انتخاب کردی. بعد از چند دقیقه راه رفتن، به یک اتاق کوچک می‌رسیم که پر از تار عنکبوت است. یک صندوقچه قدیمی در گوشه اتاق می بینیم.</p>';
+                        addRoleplayOption('صندوقچه را باز کن', '15');
+                        addRoleplayOption('به اتاق های دیگر برو', '11');
+                        break;
+                        
+                    case 13:
+                        storyElement.innerHTML = '<p>مسیر سمت راست را انتخاب کردی. این مسیر به یک اتاق بزرگ منتهی می‌شود که پر از نقاشی‌های دیواری باستانی است. این نقاشی‌ها داستان پیدایش شهر کانیلا را روایت می‌کنند.</p>';
+                        addRoleplayOption('نقاشی‌ها را مطالعه کن', '16');
+                        addRoleplayOption('به اتاق های دیگر برو', '11');
+                        break;
+                        
+                    case 14:
+                        storyElement.innerHTML = '<p>مسیر مستقیم را انتخاب کردی. ناگهان کف راهرو فرو می‌ریزد و به یک چاله عمیق سقوط می‌کنی! خوشبختانه فقط کمی آسیب دیدی.</p>';
+                        adventureState.health -= 20;
+                        addRoleplayOption('بازگشت به انتخاب مسیر', '11');
+                        break;
+                        
+                    case 15:
+                        storyElement.innerHTML = '<p>صندوقچه را باز کردی. داخل آن یک گردنبند طلای قدیمی و 50 سکه طلا پیدا کردی! اما ناگهان صداهایی از راهرو می‌شنویم. به نظر می‌رسد نگهبانان معبد متوجه حضور ما شده‌اند.</p>';
+                        adventureState.gold += 50;
+                        adventureState.items.push('گردنبند طلای قدیمی');
+                        addRoleplayOption('سریع فرار کنیم', '17');
+                        break;
+                        
+                    case 16:
+                        storyElement.innerHTML = '<p>نقاشی‌ها را مطالعه کردی. آنها داستان تأسیس شهر کانیلا توسط گروهی از کاوشگران را روایت می‌کنند که به دنبال مکانی امن برای زندگی بودند. در آخرین نقاشی، نشانه‌هایی از محل پنهان شدن گنج اصلی را دیدی.</p>';
+                        addRoleplayOption('به دنبال گنج برویم', '18');
+                        addRoleplayOption('به اتاق های دیگر برو', '11');
+                        break;
+                        
+                    case 17:
+                        storyElement.innerHTML = '<p>ما با عجله از معبد خارج شدیم. نگهبانان موفق نشدند ما را بگیرند. ما بخشی از گنج را پیدا کردیم اما گنج اصلی هنوز در معبد پنهان است. شاید روزی دیگر بازگردیم...</p>';
+                        roleplayState.completed = true;
+                        addRoleplayOption('بازگشت به بازی‌ها', 'backToGames');
+                        break;
+                        
+                    case 18:
+                        storyElement.innerHTML = '<p>با استفاده از اطلاعاتی که از نقاشی‌ها بدست آوردی، به اتاق گنج اصلی رسیدیم. صندوقچه بزرگی پر از طلا، جواهرات و آثار هنری باستانی پیدا کردیم! ما گنج افسانه‌ای کانیلا را پیدا کردیم!</p>';
+                        adventureState.gold += 200;
+                        increaseUserXP(100);
+                        roleplayState.completed = true;
+                        addRoleplayOption('بازگشت به بازی‌ها', 'backToGames');
+                        break;
+                }
+            }
+            
+            if (roleplayState.completed) {
+                tinaAvatar.classList.remove('roleplay');
+            }
+        }
+        
+        function addRoleplayOption(text, nextStage) {
+            const optionsElement = document.getElementById('roleplayOptions');
+            const option = document.createElement('div');
+            option.className = 'adventure-option';
+            option.textContent = text;
+            
+            if (nextStage === 'backToGames') {
+                option.onclick = backToGames;
+            } else {
+                option.onclick = function() {
+                    roleplayState.stage = parseInt(nextStage);
+                    updateRoleplayGame();
+                };
+            }
+            
+            optionsElement.appendChild(option);
+        }
+        
+        // توابع شخصی‌سازی
+        function showCustomizationModal() {
+            document.getElementById('customizationModal').style.display = 'flex';
+            document.getElementById('botNameInput').value = userMemory.preferences.botName;
+            document.getElementById('speechStyleSelect').value = userMemory.preferences.speechStyle;
+        }
+        
+        function closeCustomizationModal() {
+            document.getElementById('customizationModal').style.display = 'none';
+        }
+        
+        function saveCustomization() {
+            const newName = document.getElementById('botNameInput').value.trim();
+            const newSpeechStyle = document.getElementById('speechStyleSelect').value;
+            
+            if (newName) {
+                userMemory.preferences.botName = newName;
+                botNameDisplay.textContent = newName + " (Tina)";
+                localStorage.setItem('tina_botName', newName);
+            }
+            
+            userMemory.preferences.speechStyle = newSpeechStyle;
+            localStorage.setItem('tina_speechStyle', newSpeechStyle);
+            
+            saveUserData();
+            closeCustomizationModal();
+            
+            addMessage(`تنظیمات جدیدم رو دوست دارم! از الآن به بعد من ${newName} هستم و با سبک ${newSpeechStyle} صحبت می‌کنم.`, 'bot');
+        }
+        
+        function resetAllData() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید همه داده‌ها را حذف کنید؟ این عمل غیرقابل بازگشت است.')) {
+                localStorage.removeItem('tina_chatHistory');
+                localStorage.removeItem('tina_userData');
+                localStorage.removeItem('tina_quests');
+                localStorage.removeItem('tina_questsReset');
+                localStorage.removeItem('tina_learned');
+                localStorage.removeItem('tina_botName');
+                localStorage.removeItem('tina_speechStyle');
+                
+                location.reload();
+            }
+        }
+        
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        window.onload = function() {
+            userInput.focus();
+            
+            setTimeout(() => {
+                addMessage("امروز می‌تونم در چه موردی بهت کمک کنم؟ از قیمت‌ها گرفته تا مأموریت‌های شهر!", 'bot');
+                saveChatHistory();
+            }, 1000);
+        };
+    </script>
+    
+        <!-- کدهای اصلی اسکریپت -->
+
+    <!-- اضافه کردن اسکریپت Service Worker در اینجا -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
