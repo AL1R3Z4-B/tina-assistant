@@ -3808,8 +3808,60 @@
         }
     </script>
 
-<!-- سیستم لاگین و چت پیشرفته -->
-<div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; justify-content: center; align-items: center;">
+<!-- سیستم پیشرفته چت و اعلان‌ها -->
+<div id="notificationBell" style="position: fixed; top: 20px; right: 100px; z-index: 10000; background: #ff6b6b; color: white; padding: 10px; border-radius: 50%; cursor: pointer; display: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+  🔔
+</div>
+
+<div id="liveChatWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 10000;">
+  <div id="chatButton" style="background: #25D366; color: white; padding: 15px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.3s ease;">
+    💬
+  </div>
+  
+  <div id="chatBox" style="display: none; position: absolute; bottom: 70px; right: 0; width: 400px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 2px solid #25D366; z-index: 10001;">
+    <div style="background: #25D366; color: white; padding: 15px; border-radius: 13px 13px 0 0; display: flex; justify-content: space-between; align-items: center;">
+      <strong>💬 پنل کاربری تینا</strong>
+      <span id="closeChat" style="cursor: pointer; font-size: 18px;">✕</span>
+    </div>
+    
+    <div style="padding: 10px 15px; background: #f0f2f5; border-bottom: 1px solid #e0e0e0; font-size: 12px; color: #666;">
+      👤 کاربر: <span id="currentUsername">...</span> | 
+      🔔 اعلان‌ها: <span id="notificationCount">0</span> |
+      💬 پیام‌ها: <span id="messageCount">0</span>
+    </div>
+    
+    <div id="chatTabs" style="display: flex; background: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
+      <button id="tabChat" class="tab-button active" onclick="switchTab('chat')" style="flex: 1; padding: 12px; border: none; background: #25D366; color: white; cursor: pointer; transition: all 0.3s;">💬 چت</button>
+      <button id="tabNotifications" class="tab-button" onclick="switchTab('notifications')" style="flex: 1; padding: 12px; border: none; background: #e9ecef; cursor: pointer; transition: all 0.3s;">🔔 اعلان‌ها</button>
+      <button id="tabProfile" class="tab-button" onclick="switchTab('profile')" style="flex: 1; padding: 12px; border: none; background: #e9ecef; cursor: pointer; transition: all 0.3s;">👤 پروفایل</button>
+    </div>
+    
+    <div id="chatContent" class="tab-content" style="display: block;">
+      <div id="chatMessages" style="height: 250px; overflow-y: auto; padding: 10px; font-size: 14px; background: #f7f9fc;"></div>
+      <div style="padding: 15px; border-top: 1px solid #e0e0e0;">
+        <input type="text" id="chatInput" placeholder="✍️ پیام خود را بنویسید..." style="width: 100%; padding: 12px 15px; border: 2px solid #ddd; border-radius: 25px; margin-bottom: 10px; outline: none; font-size: 14px;">
+        <button onclick="sendChatMessage()" style="background: #25D366; color: white; border: none; padding: 12px 15px; border-radius: 25px; width: 100%; cursor: pointer; font-size: 14px; font-weight: bold;">
+          📤 ارسال پیام
+        </button>
+      </div>
+    </div>
+    
+    <div id="notificationsContent" class="tab-content" style="display: none;">
+      <div id="notificationsList" style="height: 300px; overflow-y: auto; padding: 10px;"></div>
+    </div>
+    
+    <div id="profileContent" class="tab-content" style="display: none; padding: 20px;">
+      <h4 style="margin-bottom: 15px;">👤 اطلاعات کاربری</h4>
+      <div id="userProfileInfo"></div>
+      <button onclick="logout()" style="background: #ff6b6b; color: white; border: none; padding: 10px 15px; border-radius: 8px; width: 100%; margin-top: 15px; cursor: pointer;">
+        🚪 خروج از سیستم
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- سیستم لاگین -->
+<div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10002; justify-content: center; align-items: center;">
   <div style="background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
     <h2 style="color: #8a2be2; margin-bottom: 20px;">🔐 ورود به پشتیبانی تینا</h2>
     
@@ -3846,43 +3898,12 @@
   </div>
 </div>
 
-<!-- چت ویجت جدید -->
-<div id="liveChatWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 10000;">
-  <div id="chatButton" style="background: #25D366; color: white; padding: 15px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.3s ease;">
-    💬
-  </div>
-  
-  <div id="chatBox" style="display: none; position: absolute; bottom: 70px; right: 0; width: 350px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 2px solid #25D366;">
-    <div style="background: #25D366; color: white; padding: 15px; border-radius: 13px 13px 0 0; display: flex; justify-content: space-between; align-items: center;">
-      <strong>💬 چت با پشتیبانی</strong>
-      <span id="closeChat" style="cursor: pointer; font-size: 18px;">✕</span>
-    </div>
-    
-    <div id="userInfo" style="padding: 10px 15px; background: #f0f2f5; border-bottom: 1px solid #e0e0e0; font-size: 12px; color: #666;">
-      👤 کاربر: <span id="currentUsername">...</span> | 🔗 وضعیت: <span id="connectionStatus">در حال اتصال...</span>
-    </div>
-    
-    <div id="chatMessages" style="height: 250px; overflow-y: auto; padding: 10px; font-size: 14px; background: #f7f9fc;">
-      <div style="text-align: center; color: #666; padding: 30px 20px;">
-        <div>🔗 در حال اتصال به پشتیبانی...</div>
-        <div style="font-size: 12px; margin-top: 10px;">لطفاً منتظر بمانید</div>
-      </div>
-    </div>
-    
-    <div style="padding: 15px; border-top: 1px solid #e0e0e0;">
-      <input type="text" id="chatInput" placeholder="✍️ پیام خود را بنویسید..." style="width: 100%; padding: 12px 15px; border: 2px solid #ddd; border-radius: 25px; margin-bottom: 10px; outline: none; font-size: 14px;">
-      <button onclick="sendChatMessage()" style="background: #25D366; color: white; border: none; padding: 12px 15px; border-radius: 25px; width: 100%; cursor: pointer; font-size: 14px; font-weight: bold;">
-        📤 ارسال پیام
-      </button>
-    </div>
-  </div>
-</div>
-
 <script>
-// سیستم لاگین و چت پیشرفته - بدون نیاز به سرور
-const GIST_ID = '4a0ab1a75a0218c3163223d442cf2e33'; // 🔄 این را با ID گیت خود جایگزین کنید
+// سیستم پیشرفته مدیریت کاربران و چت
+const API_BASE = 'https://tina-assistant-4baj.vercel.app/api/telegram';
 let currentUser = null;
 let chatInterval;
+let notificationInterval;
 
 // بارگذاری اولیه
 document.addEventListener('DOMContentLoaded', function() {
@@ -3894,6 +3915,31 @@ document.addEventListener('DOMContentLoaded', function() {
     showLoginModal();
   }
 });
+
+function switchTab(tabName) {
+  // غیرفعال کردن همه تب‌ها
+  document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.style.background = '#e9ecef';
+    btn.style.color = '#333';
+  });
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.style.display = 'none';
+  });
+  
+  // فعال کردن تب انتخاب شده
+  const activeButton = document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+  activeButton.style.background = '#25D366';
+  activeButton.style.color = 'white';
+  
+  const activeContent = document.getElementById(tabName + 'Content');
+  activeContent.style.display = 'block';
+  
+  if (tabName === 'notifications') {
+    loadNotifications();
+  } else if (tabName === 'profile') {
+    loadProfile();
+  }
+}
 
 // مدیریت لاگین
 function showLoginModal() {
@@ -3951,34 +3997,23 @@ async function registerUser() {
   }
   
   try {
-    // ذخیره کاربر در localStorage (ساده‌ترین روش)
-    const users = JSON.parse(localStorage.getItem('tina_users') || '{}');
+    const response = await fetch(`${API_BASE}?action=register&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+    const result = await response.json();
     
-    if (users[username]) {
-      showMessage('این نام کاربری قبلاً ثبت شده است', true);
-      return;
+    if (result.success) {
+      showMessage('ثبت نام موفقیت‌آمیز بود! اکنون وارد شوید');
+      setTimeout(() => {
+        document.getElementById('registerUsername').value = '';
+        document.getElementById('registerPassword').value = '';
+        document.getElementById('registerConfirm').value = '';
+        showLoginForm();
+        document.getElementById('loginUsername').value = username;
+      }, 2000);
+    } else {
+      showMessage(result.error || 'خطا در ثبت نام', true);
     }
-    
-    const userId = Date.now(); // ID منحصر به فرد
-    users[username] = {
-      id: userId,
-      password: password,
-      createdAt: new Date().toISOString()
-    };
-    
-    localStorage.setItem('tina_users', JSON.stringify(users));
-    
-    showMessage('ثبت نام موفقیت‌آمیز بود! اکنون وارد شوید');
-    setTimeout(() => {
-      document.getElementById('registerUsername').value = '';
-      document.getElementById('registerPassword').value = '';
-      document.getElementById('registerConfirm').value = '';
-      showLoginForm();
-      document.getElementById('loginUsername').value = username;
-    }, 2000);
-    
   } catch (error) {
-    showMessage('خطا در ثبت نام: ' + error.message, true);
+    showMessage('خطا در ارتباط با سرور', true);
   }
 }
 
@@ -3993,63 +4028,49 @@ async function loginUser() {
   }
   
   try {
-    const users = JSON.parse(localStorage.getItem('tina_users') || '{}');
-    const user = users[username];
+    const response = await fetch(`${API_BASE}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+    const result = await response.json();
     
-    if (!user) {
-      showMessage('نام کاربری یافت نشد', true);
-      return;
+    if (result.success) {
+      currentUser = {
+        id: result.user.id,
+        username: username,
+        loginTime: new Date().toISOString()
+      };
+      
+      localStorage.setItem('tina_currentUser', JSON.stringify(currentUser));
+      hideLoginModal();
+      initChatSystem();
+      showMessage('ورود موفقیت‌آمیز بود!');
+    } else {
+      showMessage(result.error || 'خطا در ورود', true);
     }
-    
-    if (user.password !== password) {
-      showMessage('رمز عبور اشتباه است', true);
-      return;
-    }
-    
-    currentUser = {
-      id: user.id,
-      username: username,
-      loginTime: new Date().toISOString()
-    };
-    
-    localStorage.setItem('tina_currentUser', JSON.stringify(currentUser));
-    hideLoginModal();
-    initChatSystem();
-    showMessage('ورود موفقیت‌آمیز بود!');
-    
   } catch (error) {
-    showMessage('خطا در ورود: ' + error.message, true);
+    showMessage('خطا در ارتباط با سرور', true);
   }
 }
 
 function logout() {
   currentUser = null;
   localStorage.removeItem('tina_currentUser');
-  if (document.getElementById('logoutBtn')) {
-    document.getElementById('logoutBtn').remove();
-  }
+  if (chatInterval) clearInterval(chatInterval);
+  if (notificationInterval) clearInterval(notificationInterval);
   showLoginModal();
 }
 
 // راه‌اندازی سیستم چت
 function initChatSystem() {
-  // اضافه کردن دکمه خروج
-  if (!document.getElementById('logoutBtn')) {
-    const logoutBtn = document.createElement('button');
-    logoutBtn.id = 'logoutBtn';
-    logoutBtn.innerHTML = '🚪 خروج از سیستم';
-    logoutBtn.style.cssText = 'position: fixed; top: 15px; left: 15px; z-index: 10001; background: #ff6b6b; color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);';
-    logoutBtn.onclick = logout;
-    document.body.appendChild(logoutBtn);
-  }
+  document.getElementById('currentUsername').textContent = currentUser.username;
+  loadChatMessages();
+  loadNotifications();
+  loadProfile();
   
-  // به‌روزرسانی اطلاعات کاربر در چت
-  if (currentUser) {
-    document.getElementById('currentUsername').textContent = currentUser.username;
-  }
+  // بررسی دوره‌ای پیام‌ها و اعلان‌ها
+  chatInterval = setInterval(loadChatMessages, 5000);
+  notificationInterval = setInterval(loadNotifications, 10000);
 }
 
-// سیستم چت
+// مدیریت چت
 document.getElementById('chatButton').addEventListener('click', function() {
   if (!currentUser) {
     showLoginModal();
@@ -4062,20 +4083,87 @@ document.getElementById('chatButton').addEventListener('click', function() {
   chatBox.style.display = isVisible ? 'none' : 'block';
   
   if (!isVisible) {
-    loadChatMessages();
-    chatInterval = setInterval(loadChatMessages, 3000);
     document.getElementById('chatInput').focus();
-  } else {
-    clearInterval(chatInterval);
   }
 });
 
 document.getElementById('closeChat').addEventListener('click', function() {
   document.getElementById('chatBox').style.display = 'none';
-  clearInterval(chatInterval);
 });
 
-// ارسال پیام به تلگرام
+// بارگذاری پیام‌ها
+async function loadChatMessages() {
+  if (!currentUser) return;
+  
+  try {
+    const response = await fetch(`${API_BASE}?action=check_replies&userid=${currentUser.id}`);
+    const replies = await response.json();
+    
+    const chatContainer = document.getElementById('chatMessages');
+    
+    if (replies && replies.length > 0) {
+      chatContainer.innerHTML = '';
+      replies.forEach(msg => {
+        if (msg.reply) {
+          addMessageToChat('پشتیبانی', msg.reply, false, msg.id);
+        }
+      });
+      document.getElementById('messageCount').textContent = replies.length;
+    } else {
+      if (!chatContainer.querySelector('.no-messages')) {
+        chatContainer.innerHTML = '<div class="no-messages" style="text-align: center; color: #666; padding: 30px;">💬 هیچ پیامی وجود ندارد</div>';
+      }
+      document.getElementById('messageCount').textContent = '0';
+    }
+  } catch (error) {
+    console.error('Error loading messages:', error);
+  }
+}
+
+// بارگذاری اعلان‌ها
+async function loadNotifications() {
+  if (!currentUser) return;
+  
+  try {
+    const response = await fetch(`${API_BASE}?action=check_notifications&userid=${currentUser.id}`);
+    const notifications = await response.json();
+    
+    const notificationsContainer = document.getElementById('notificationsList');
+    const notificationBell = document.getElementById('notificationBell');
+    
+    if (notifications && notifications.length > 0) {
+      notificationsContainer.innerHTML = '';
+      notifications.forEach(notif => {
+        const notifDiv = document.createElement('div');
+        notifDiv.style.cssText = 'background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 10px; margin: 5px 0;';
+        notifDiv.innerHTML = `<strong>${notif.title}</strong><br>${notif.message}<br><small style="color: #666;">${new Date(notif.timestamp).toLocaleString('fa-IR')}</small>`;
+        notificationsContainer.appendChild(notifDiv);
+      });
+      
+      document.getElementById('notificationCount').textContent = notifications.length;
+      notificationBell.style.display = 'flex';
+    } else {
+      notificationsContainer.innerHTML = '<div style="text-align: center; color: #666; padding: 30px;">🔔 هیچ اعلان جدیدی وجود ندارد</div>';
+      document.getElementById('notificationCount').textContent = '0';
+      notificationBell.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('Error loading notifications:', error);
+  }
+}
+
+// بارگذاری پروفایل
+function loadProfile() {
+  if (!currentUser) return;
+  
+  document.getElementById('userProfileInfo').innerHTML = `
+    <p><strong>نام کاربری:</strong> ${currentUser.username}</p>
+    <p><strong>آیدی کاربر:</strong> ${currentUser.id}</p>
+    <p><strong>تاریخ عضویت:</strong> ${new Date(currentUser.loginTime).toLocaleString('fa-IR')}</p>
+  `;
+}
+
+// ارسال پیام
 async function sendChatMessage() {
   if (!currentUser) {
     showLoginModal();
@@ -4086,81 +4174,29 @@ async function sendChatMessage() {
   const message = input.value.trim();
   
   if (message) {
-    // نمایش فوری پیام کاربر
     addMessageToChat('شما', message, true);
     input.value = '';
     
     try {
-      // ارسال به تلگرام از طریق API ساده
-      const telegramMessage = `👤 کاربر: ${currentUser.username} (ID: ${currentUser.id})\n📝 پیام: ${message}\n⏰ زمان: ${new Date().toLocaleString('fa-IR')}`;
+      const response = await fetch(`${API_BASE}?action=send_message&userid=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}&message=${encodeURIComponent(message)}`);
+      const result = await response.json();
       
-      // این آدرس را با آدرس ربات تلگرام خود جایگزین کنید
-      await fetch(`https://api.telegram.org/bot6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4/sendMessage`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chat_id: 222666092,
-          text: telegramMessage,
-          parse_mode: 'HTML'
-        })
-      });
-      
-      // ذخیره پیام در localStorage
-      const userMessages = JSON.parse(localStorage.getItem(`tina_messages_${currentUser.id}`) || '[]');
-      userMessages.push({
-        id: Date.now(),
-        message: message,
-        timestamp: new Date().toISOString(),
-        sent: true
-      });
-      localStorage.setItem(`tina_messages_${currentUser.id}`, JSON.stringify(userMessages));
-      
+      if (!result.status === 'sent') {
+        addMessageToChat('سیستم', '⚠️ خطا در ارسال پیام', false);
+      }
     } catch (error) {
-      addMessageToChat('سیستم', '⚠️ خطا در ارسال پیام. لطفاً مجدداً تلاش کنید.', false);
+      addMessageToChat('سیستم', '⚠️ خطا در اتصال به سرور', false);
     }
-  }
-}
-
-// بررسی پاسخ‌ها
-async function loadChatMessages() {
-  if (!currentUser) return;
-  
-  try {
-    const chatContainer = document.getElementById('chatMessages');
-    
-    // پاک کردن وضعیت قبلی
-    const oldStatus = chatContainer.querySelector('.system-message');
-    if (oldStatus) oldStatus.remove();
-    
-    // بررسی پاسخ‌های جدید (شبیه‌سازی)
-    const userMessages = JSON.parse(localStorage.getItem(`tina_messages_${currentUser.id}`) || '[]');
-    const hasReplies = userMessages.some(msg => msg.reply);
-    
-    const statusDiv = document.createElement('div');
-    statusDiv.className = 'system-message';
-    statusDiv.style.cssText = 'text-align: center; color: #666; padding: 10px; font-size: 12px;';
-    
-    if (hasReplies) {
-      statusDiv.innerHTML = '✅ پاسخ‌های جدید دریافت شد';
-      document.getElementById('connectionStatus').textContent = 'متصل - پاسخ جدید';
-    } else {
-      statusDiv.innerHTML = '✅ متصل به پشتیبانی - منتظر پاسخ...';
-      document.getElementById('connectionStatus').textContent = 'متصل';
-    }
-    
-    chatContainer.appendChild(statusDiv);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-    
-  } catch (error) {
-    document.getElementById('connectionStatus').textContent = 'قطع ارتباط';
   }
 }
 
 // نمایش پیام در چت
 function addMessageToChat(sender, message, isUser, messageId = null) {
   const chatContainer = document.getElementById('chatMessages');
+  
+  // حذف پیام "هیچ پیامی وجود ندارد"
+  const noMessages = chatContainer.querySelector('.no-messages');
+  if (noMessages) noMessages.remove();
   
   const messageDiv = document.createElement('div');
   if (messageId) {
@@ -4178,28 +4214,20 @@ function addMessageToChat(sender, message, isUser, messageId = null) {
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// ارسال با دکمه Enter
+// ارسال با Enter
 document.getElementById('chatInput').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') {
     sendChatMessage();
   }
 });
 
-// راهنمای پاسخ‌دهی در تلگرام
-console.log(`
-📋 راهنمای پاسخ‌دهی در تلگرام:
-
-1. کاربران در وب ثبت‌نام می‌کنند و پیام می‌فرستند
-2. شما در تلگرام پیام را با اطلاعات کاربر دریافت می‌کنید
-3. برای پاسخ دادن، به ربات تلگرام پیام بفرستید:
-
-پاسخ به کاربر [آیدی کاربر]: [متن پاسخ]
-
-مثال:
-پاسخ به کاربر 123456: سلام، ممنون از پیام شما
-
-4. سیستم به طور خودکار پاسخ را برای کاربر ارسال می‌کند
-`);
+// کلیک روی زنگ اعلان
+document.getElementById('notificationBell').addEventListener('click', function() {
+  if (currentUser) {
+    document.getElementById('chatBox').style.display = 'block';
+    switchTab('notifications');
+  }
+});
 </script>
 	
 </body>
