@@ -3807,5 +3807,121 @@
             });
         }
     </script>
+
+<!-- سیستم چت زنده -->
+<div id="liveChatWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 10000;">
+  <div id="chatButton" style="background: #25D366; color: white; padding: 15px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+    💬
+  </div>
+  
+  <div id="chatBox" style="display: none; position: absolute; bottom: 70px; right: 0; width: 300px; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+    <div style="background: #8a2be2; color: white; padding: 15px; border-radius: 10px 10px 0 0;">
+      <strong>چت زنده با پشتیبانی</strong>
+      <span id="closeChat" style="float: left; cursor: pointer;">✕</span>
+    </div>
+    
+    <div id="chatMessages" style="height: 200px; overflow-y: auto; padding: 10px; font-size: 14px;">
+      <div style="text-align: center; color: #666; padding: 20px;">
+        در حال اتصال...
+      </div>
+    </div>
+    
+    <div style="padding: 10px; border-top: 1px solid #eee;">
+      <input type="text" id="chatInput" placeholder="پیام خود را بنویسید..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;">
+      <button onclick="sendChatMessage()" style="background: #8a2be2; color: white; border: none; padding: 8px 15px; border-radius: 5px; width: 100%; cursor: pointer;">
+        ارسال
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// سیستم چت زنده
+let chatInterval;
+let currentUser = 'user_' + Math.random().toString(36).substr(2, 9);
+
+// باز کردن/بستن چت
+document.getElementById('chatButton').addEventListener('click', function() {
+  const chatBox = document.getElementById('chatBox');
+  chatBox.style.display = chatBox.style.display === 'none' ? 'block' : 'none';
+  
+  if (chatBox.style.display === 'block') {
+    loadChatMessages();
+    chatInterval = setInterval(loadChatMessages, 3000);
+  } else {
+    clearInterval(chatInterval);
+  }
+});
+
+document.getElementById('closeChat').addEventListener('click', function() {
+  document.getElementById('chatBox').style.display = 'none';
+  clearInterval(chatInterval);
+});
+
+// ارسال پیام
+function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  
+  if (message) {
+    // نمایش پیام کاربر
+    addMessageToChat('شما', message, true);
+    
+    // ارسال به سرور
+    fetch(`https://tina-assistant-4baj.vercel.app/api/telegram?action=send_message&user=${currentUser}&message=${encodeURIComponent(message)}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'sent') {
+          input.value = '';
+        }
+      })
+      .catch(error => {
+        addMessageToChat('سیستم', 'خطا در ارسال پیام!', false);
+      });
+  }
+}
+
+// دریافت پیام‌ها
+function loadChatMessages() {
+  fetch(`https://tina-assistant-4baj.vercel.app/api/telegram?action=check_replies&user=${currentUser}`)
+    .then(response => response.json())
+    .then(messages => {
+      const chatContainer = document.getElementById('chatMessages');
+      chatContainer.innerHTML = '';
+      
+      messages.forEach(msg => {
+        if (msg.reply) {
+          addMessageToChat('پشتیبانی', msg.reply, false);
+        }
+      });
+      
+      if (messages.length === 0) {
+        chatContainer.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">هنوز پیامی ارسال نکرده‌اید...</div>';
+      }
+    })
+    .catch(error => {
+      console.error('Error loading messages:', error);
+    });
+}
+
+// اضافه کردن پیام به چت
+function addMessageToChat(sender, message, isUser) {
+  const chatContainer = document.getElementById('chatMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.style.cssText = `margin: 5px 0; padding: 8px; border-radius: 10px; max-width: 80%; 
+                              ${isUser ? 'background: #e3f2fd; margin-left: 20%;' : 'background: #f5f5f5; margin-right: 20%;'}`;
+  messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+  chatContainer.appendChild(messageDiv);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// ارسال با Enter
+document.getElementById('chatInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    sendChatMessage();
+  }
+});
+</script>
+
 </body>
 </html>
