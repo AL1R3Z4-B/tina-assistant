@@ -1,7 +1,7 @@
 const messageDB = require('./messages');
+const fetch = require('node-fetch');
 
 module.exports = async (req, res) => {
-  // تنظیمات CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -10,14 +10,13 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
-  const BOT_TOKEN = "6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4";
-  const ADMIN_CHAT_ID = "222666092";
+  const BOT_TOKEN = process.env.BOT_TOKEN || "6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4";
+  const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || "222666092";
 
   try {
     if (req.method === 'GET') {
       const { action, username, password, message, userid, title, user } = req.query;
 
-      // API برای وب‌اپلیکیشن
       if (action === 'register') {
         const result = messageDB.createUser(username, password);
         return res.json(result);
@@ -44,7 +43,6 @@ module.exports = async (req, res) => {
         return res.json(notifications);
       }
 
-      // API برای مدیریت (فقط ادمین)
       if (action === 'admin_get_users') {
         const users = messageDB.getAllUsers();
         return res.json(users);
@@ -52,7 +50,6 @@ module.exports = async (req, res) => {
 
       if (action === 'admin_send_notification') {
         if (user === 'all') {
-          // ارسال به همه کاربران
           const users = messageDB.getAllUsers();
           Object.keys(users).forEach(username => {
             const userObj = users[username];
@@ -60,7 +57,6 @@ module.exports = async (req, res) => {
           });
           return res.json({ success: true, sentTo: 'all users' });
         } else {
-          // ارسال به کاربر خاص
           const users = messageDB.getAllUsers();
           const userObj = users[user];
           if (userObj) {
@@ -84,7 +80,6 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'POST') {
-      // پردازش پیام‌های تلگرام
       let update = req.body;
       
       if (typeof req.body === 'string') {
@@ -101,7 +96,6 @@ module.exports = async (req, res) => {
   }
 };
 
-// اطلاع‌رسانی به تلگرام
 async function notifyTelegram(token, chatId, message) {
   const text = `💬 پیام جدید از کاربر:\n\n👤 کاربر: ${message.username} (ID: ${message.userId})\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\n📩 برای پاسخ: /reply_${message.id}`;
   
@@ -118,21 +112,17 @@ async function notifyTelegram(token, chatId, message) {
   });
 }
 
-// پردازش دستورات تلگرام
 async function processTelegramMessage(update, token, adminChatId) {
   if (!update?.message?.text) return;
 
   const chatId = update.message.chat.id;
   const text = update.message.text;
-  const messageId = update.message.message_id;
 
-  // فقط ادمین مجاز است
   if (chatId.toString() !== adminChatId) {
     await sendTelegramMessage(token, chatId, '❌ شما دسترسی ادمین ندارید');
     return;
   }
 
-  // پاسخ به پیام کاربر
   if (text.startsWith('/reply_')) {
     const parts = text.split(' ');
     if (parts.length >= 2) {
@@ -146,8 +136,6 @@ async function processTelegramMessage(update, token, adminChatId) {
       );
     }
   }
-
-  // مشاهده کاربران
   else if (text === '/users') {
     const users = messageDB.getAllUsers();
     let response = `👥 کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
@@ -162,8 +150,6 @@ async function processTelegramMessage(update, token, adminChatId) {
     
     await sendTelegramMessage(token, chatId, response);
   }
-
-  // تغییر رمز عبور کاربر
   else if (text.startsWith('/pass_')) {
     const parts = text.split(' ');
     if (parts.length >= 3) {
@@ -177,8 +163,6 @@ async function processTelegramMessage(update, token, adminChatId) {
       );
     }
   }
-
-  // ارسال اعلان به کاربر
   else if (text.startsWith('/notify_')) {
     const parts = text.split(' ');
     if (parts.length >= 3) {
@@ -210,8 +194,6 @@ async function processTelegramMessage(update, token, adminChatId) {
       );
     }
   }
-
-  // آمار سیستم
   else if (text === '/stats') {
     const stats = messageDB.getStats();
     const response = `📊 آمار سیستم:\n\n` +
@@ -222,8 +204,6 @@ async function processTelegramMessage(update, token, adminChatId) {
     
     await sendTelegramMessage(token, chatId, response);
   }
-
-  // راهنما
   else if (text === '/help' || text === '/start') {
     const helpText = `📋 دستورات مدیریت تینا:\n\n` +
       `📬 /users - مشاهده تمام کاربران\n` +
@@ -238,8 +218,6 @@ async function processTelegramMessage(update, token, adminChatId) {
     
     await sendTelegramMessage(token, chatId, helpText);
   }
-
-  // مشاهده پیام‌های پاسخ داده نشده
   else if (text === '/messages') {
     const unreplied = messageDB.getUnrepliedMessages();
     
