@@ -1,10 +1,10 @@
 const messageDB = require('./messages');
 
 module.exports = async (req, res) => {
-  // تنظیمات CORS کامل
+  // تنظیمات CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -14,129 +14,110 @@ module.exports = async (req, res) => {
 
   try {
     if (req.method === 'GET') {
-      const { action, user, message } = req.query;
+      const { action, username, password, message, userid } = req.query;
 
-      // API برای وب - دریافت پیام‌های کاربر
-      if (action === 'get_messages') {
-        const messages = messageDB.getUserMessages(user);
-        return res.status(200).json(messages);
+      // ثبت نام کاربر جدید
+      if (action === 'register') {
+        if (!username || !password) {
+          return res.status(400).json({ error: 'نام کاربری و رمز عبور ضروری است' });
+        }
+        const result = await messageDB.createUser(username, password);
+        return res.status(result.success ? 200 : 400).json(result);
       }
-      
-      // API برای وب - ارسال پیام جدید
+
+      // ورود کاربر
+      if (action === 'login') {
+        if (!username || !password) {
+          return res.status(400).json({ error: 'نام کاربری و رمز عبور ضروری است' });
+        }
+        const result = await messageDB.loginUser(username, password);
+        return res.status(result.success ? 200 : 400).json(result);
+      }
+
+      // ارسال پیام
       if (action === 'send_message') {
-        if (!user || !message) {
-          return res.status(400).json({ error: 'Missing parameters: user and message required' });
+        if (!userid || !message || !username) {
+          return res.status(400).json({ error: 'پارامترهای ضروری ارسال نشده' });
         }
         
-        const newMessage = messageDB.addMessage(user, message, true);
-        
-        // اطلاع به تلگرام
+        const newMessage = await messageDB.addMessage(parseInt(userid), message, username);
         await notifyTelegram(token, newMessage);
         
         return res.status(200).json({ 
           status: 'sent', 
-          id: newMessage.id,
-          message: 'پیام با موفقیت ارسال شد'
+          id: newMessage.id 
         });
       }
-      
-      // API برای وب - بررسی پاسخ‌ها
+
+      // دریافت پاسخ‌ها
       if (action === 'check_replies') {
-        if (!user) {
-          return res.status(400).json({ error: 'Missing user parameter' });
+        if (!userid) {
+          return res.status(400).json({ error: 'شناسه کاربر ضروری است' });
         }
         
-        const userReplies = messageDB.getUserReplies(user);
+        const userReplies = await messageDB.getUserReplies(parseInt(userid));
         return res.status(200).json(userReplies);
       }
 
-      // API برای مشاهده پیام‌های پاسخ داده نشده (برای تلگرام)
+      // دریافت پیام‌های پاسخ داده نشده (برای تلگرام)
       if (action === 'get_unreplied') {
-        const unreplied = messageDB.getUnrepliedMessages();
+        const unreplied = await messageDB.getUnrepliedMessages();
         return res.status(200).json(unreplied);
       }
 
       return res.status(200).json({ 
         message: 'Tina Chat API - Active',
-        timestamp: new Date().toISOString(),
-        endpoints: {
-          'ارسال پیام': '/api/telegram?action=send_message&user=USERNAME&message=MESSAGE',
-          'دریافت پاسخ‌ها': '/api/telegram?action=check_replies&user=USERNAME',
-          'پیام‌های پاسخ داده نشده': '/api/telegram?action=get_unreplied'
-        }
+        timestamp: new Date().toISOString()
       });
     }
 
     if (req.method === 'POST') {
-      // پردازش پیام از تلگرام
-      let update;
+      let update = req.body;
       
-      if (req.headers['content-type'] === 'application/json') {
-        update = req.body;
-      } else {
-        let body = '';
-        for await (const chunk of req) {
-          body += chunk.toString();
-        }
-        update = JSON.parse(body);
+      if (typeof req.body === 'string') {
+        update = JSON.parse(req.body);
       }
 
       await processTelegramMessage(update, token);
       return res.status(200).json({ status: 'processed' });
     }
 
-    return res.status(405).json({ error: 'Method not allowed' });
-
   } catch (error) {
     console.error('API Error:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      details: error.message 
-    });
+    return res.status(500).json({ error: error.message });
   }
 };
 
-// اطلاع‌رسانی پیام جدید به تلگرام
 async function notifyTelegram(token, message) {
-  const text = `💬 پیام جدید از کاربر:\n\n👤 کاربر: ${message.user}\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ: /reply_${message.id}`;
+  const text = `💬 پیام جدید از کاربر:\n\n👤 کاربر: ${message.username} (ID: ${message.userId})\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ: /reply_${message.id}`;
   
-  try {
-    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: 222666092,
-        text: text,
-        parse_mode: 'Markdown'
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Telegram API error: ${response.status}`);
-    }
-  } catch (error) {
-    console.error('Error notifying Telegram:', error);
-    throw error;
-  }
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      chat_id: 222666092,
+      text: text,
+      parse_mode: 'Markdown'
+    })
+  });
 }
 
-// پردازش پیام از تلگرام
 async function processTelegramMessage(update, token) {
   if (!update?.message?.text) return;
 
   const chatId = update.message.chat.id;
   const text = update.message.text;
 
-  // دستور پاسخ به پیام
+  // پاسخ به پیام
   if (text.startsWith('/reply_')) {
     const parts = text.split(' ');
     if (parts.length >= 2) {
       const messageId = parts[0].replace('/reply_', '');
       const replyText = parts.slice(1).join(' ');
       
-      const success = messageDB.addReply(messageId, replyText);
+      const success = await messageDB.addReply(messageId, replyText);
       
       if (success) {
         await sendTelegramMessage(token, chatId, '✅ پاسخ شما با موفقیت ارسال شد!');
@@ -150,9 +131,9 @@ async function processTelegramMessage(update, token) {
     }
   }
   
-  // دستور مشاهده پیام‌های پاسخ داده نشده
+  // مشاهده پیام‌های پاسخ داده نشده
   else if (text === '/messages' || text === '/start') {
-    const unreplied = messageDB.getUnrepliedMessages();
+    const unreplied = await messageDB.getUnrepliedMessages();
     
     if (unreplied.length === 0) {
       await sendTelegramMessage(token, chatId, '📭 هیچ پیام جدیدی وجود ندارد!');
@@ -160,51 +141,52 @@ async function processTelegramMessage(update, token) {
       let response = `📬 پیام‌های پاسخ داده نشده (${unreplied.length}):\n\n`;
       
       unreplied.forEach((msg, index) => {
-        response += `🔸 #${msg.id} - ${msg.user}\n`;
+        response += `🔸 #${msg.id} - ${msg.username} (ID: ${msg.userId})\n`;
         response += `📝 ${msg.message}\n`;
         response += `⏰ ${new Date(msg.timestamp).toLocaleString('fa-IR')}\n`;
         response += `📩 برای پاسخ: /reply_${msg.id} متن پاسخ\n\n`;
-        
-        // محدودیت طول پیام تلگرام
-        if (index % 3 === 2 && index !== unreplied.length - 1) {
-          response += '--- ادامه ---\n\n';
-        }
       });
       
       await sendTelegramMessage(token, chatId, response);
     }
   }
 
-  // دستور راهنما
+  // راهنما
   else if (text === '/help') {
     await sendTelegramMessage(token, chatId, 
       `📋 راهنمای مدیریت چت تینا:\n\n` +
       `📬 /messages - مشاهده پیام‌های جدید\n` +
       `📝 /reply_123 - پاسخ به پیام شماره 123\n` +
-      `ℹ️  /help - نمایش این راهنما\n\n` +
-      `🌐 کاربران از طریق این لینک پیام می‌فرستند:\n` +
-      `https://al1r3z4-b.github.io/tina-assistant/`
+      `👥 /users - مشاهده کاربران ثبت‌نام شده\n` +
+      `ℹ️  /help - نمایش راهنما`
     );
+  }
+
+  // مشاهده کاربران
+  else if (text === '/users') {
+    const users = await messageDB.getAllUsers();
+    let response = `👥 کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
+    
+    Object.entries(users).forEach(([username, user]) => {
+      response += `🔸 ${username} (ID: ${user.id})\n`;
+      response += `📅 عضو since: ${new Date(user.createdAt).toLocaleString('fa-IR')}\n`;
+      response += `🔐 آخرین ورود: ${new Date(user.lastLogin).toLocaleString('fa-IR')}\n\n`;
+    });
+    
+    await sendTelegramMessage(token, chatId, response);
   }
 }
 
 async function sendTelegramMessage(token, chatId, text) {
-  try {
-    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: text,
-        parse_mode: 'Markdown'
-      })
-    });
-    
-    return response.ok;
-  } catch (error) {
-    console.error('Error sending Telegram message:', error);
-    return false;
-  }
-  }
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: text,
+      parse_mode: 'Markdown'
+    })
+  });
+}
