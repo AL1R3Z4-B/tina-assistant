@@ -17,7 +17,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Route اصلی برای تست
+// Route اصلی
 app.get('/', (req, res) => {
   res.json({ 
     message: '✅ Tina Assistant API is running!',
@@ -35,26 +35,33 @@ app.get('/api/telegram', async (req, res) => {
   const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || "222666092";
 
   try {
-    console.log('API Request:', { action, username, userid });
+    console.log('📡 API Request:', req.query);
 
     if (action === 'register') {
       const result = messageDB.createUser(username, password);
+      console.log('👤 Register result:', result);
       return res.json(result);
     }
 
     if (action === 'login') {
       const result = messageDB.loginUser(username, password);
+      console.log('🔐 Login result:', result);
       return res.json(result);
     }
 
     if (action === 'send_message') {
+      console.log('💬 Send message:', { userid, username, message });
       const newMessage = messageDB.addMessage(parseInt(userid), username, message);
+      console.log('📨 Message saved:', newMessage);
+      
+      // ارسال به تلگرام
       await notifyTelegram(BOT_TOKEN, ADMIN_CHAT_ID, newMessage);
       return res.json({ status: 'sent', id: newMessage.id });
     }
 
     if (action === 'check_replies') {
       const replies = messageDB.getUserReplies(parseInt(userid));
+      console.log('📩 Check replies:', replies);
       return res.json(replies);
     }
 
@@ -79,7 +86,7 @@ app.get('/api/telegram', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('❌ API Error:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -87,15 +94,25 @@ app.get('/api/telegram', async (req, res) => {
 // Webhook برای تلگرام
 app.post('/api/telegram', async (req, res) => {
   try {
+    console.log('🤖 Telegram webhook received:', req.body);
+    
     const BOT_TOKEN = process.env.BOT_TOKEN || "6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4";
     const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || "222666092";
     
     await processTelegramMessage(req.body, BOT_TOKEN, ADMIN_CHAT_ID);
     res.json({ status: 'ok' });
   } catch (error) {
-    console.error('Webhook error:', error);
+    console.error('❌ Webhook error:', error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// OPTIONS برای CORS
+app.options('/api/telegram', (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(200).end();
 });
 
 // توابع کمکی
@@ -103,6 +120,7 @@ async function notifyTelegram(token, chatId, message) {
   const text = `💬 پیام جدید از کاربر:\n\n👤 کاربر: ${message.username} (ID: ${message.userId})\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\n📩 برای پاسخ: /reply_${message.id}`;
   
   try {
+    console.log('📤 Sending to Telegram...');
     const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -112,30 +130,42 @@ async function notifyTelegram(token, chatId, message) {
         parse_mode: 'Markdown' 
       })
     });
-    console.log('Telegram notification sent:', response.status);
+    
+    const result = await response.json();
+    console.log('✅ Telegram response:', result);
+    
+    if (!result.ok) {
+      console.error('❌ Telegram error:', result);
+    }
   } catch (error) {
-    console.error('Error sending to Telegram:', error);
+    console.error('❌ Error sending to Telegram:', error);
   }
 }
 
 async function processTelegramMessage(update, token, adminChatId) {
-  if (!update?.message?.text) return;
+  if (!update?.message?.text) {
+    console.log('📨 No text message in update');
+    return;
+  }
 
   const chatId = update.message.chat.id;
   const text = update.message.text;
 
+  console.log(`🤖 Processing message from ${chatId}: ${text}`);
+
   if (chatId.toString() !== adminChatId) {
+    console.log('🚫 Unauthorized access attempt');
     await sendTelegramMessage(token, chatId, '❌ شما دسترسی ادمین ندارید');
     return;
   }
 
-  // پردازش دستورات تلگرام
   if (text.startsWith('/reply_')) {
     const parts = text.split(' ');
     if (parts.length >= 2) {
       const msgId = parts[0].replace('/reply_', '');
       const replyText = parts.slice(1).join(' ');
       
+      console.log(`📩 Replying to message ${msgId}: ${replyText}`);
       const success = messageDB.addReply(msgId, replyText);
       await sendTelegramMessage(token, chatId, success ? 
         '✅ پاسخ با موفقیت ارسال شد' : 
@@ -174,11 +204,29 @@ async function processTelegramMessage(update, token, adminChatId) {
     
     await sendTelegramMessage(token, chatId, helpText);
   }
+  else if (text === '/messages') {
+    const unreplied = messageDB.getUnrepliedMessages();
+    
+    if (unreplied.length === 0) {
+      await sendTelegramMessage(token, chatId, '📭 هیچ پیام جدیدی وجود ندارد!');
+    } else {
+      let response = `📬 پیام‌های پاسخ داده نشده (${unreplied.length}):\n\n`;
+      
+      unreplied.forEach((msg, index) => {
+        response += `🔸 #${msg.id} - ${msg.username}\n`;
+        response += `📝 ${msg.message}\n`;
+        response += `⏰ ${new Date(msg.timestamp).toLocaleString('fa-IR')}\n`;
+        response += `📩 برای پاسخ: /reply_${msg.id} متن پاسخ\n\n`;
+      });
+      
+      await sendTelegramMessage(token, chatId, response);
+    }
+  }
 }
 
 async function sendTelegramMessage(token, chatId, text) {
   try {
-    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -187,13 +235,16 @@ async function sendTelegramMessage(token, chatId, text) {
         parse_mode: 'Markdown'
       })
     });
+    console.log('✅ Message sent to Telegram');
   } catch (error) {
-    console.error('Error sending Telegram message:', error);
+    console.error('❌ Error sending Telegram message:', error);
   }
 }
 
-// شروع سرور - این خط مهم است!
+// شروع سرور
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Tina Assistant API running on port ${PORT}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/`);
+  console.log(`📍 Health check: https://tina-assistant-api.onrender.com/`);
+  console.log(`🤖 Bot Token: ${process.env.BOT_TOKEN ? '✅ Set' : '❌ Not set'}`);
+  console.log(`👤 Admin Chat ID: ${process.env.ADMIN_CHAT_ID || '222666092'}`);
 });
