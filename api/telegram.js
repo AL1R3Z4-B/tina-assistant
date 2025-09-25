@@ -1,3 +1,5 @@
+const messageDB = require('./messages');
+
 module.exports = async (req, res) => {
   // تنظیمات CORS
   if (req.method === 'OPTIONS') {
@@ -7,17 +9,48 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
+  const token = "6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4";
+
   if (req.method === 'GET') {
-    return res.status(200).json({
-      message: 'Tina Telegram Bot - Connected to HTML AI',
-      status: 'active',
-      html_bot_url: 'https://al1r3z4-b.github.io/tina-assistant/Tina2.html'
+    // API برای وب - دریافت پیام‌ها
+    if (req.query.action === 'get_messages') {
+      const messages = messageDB.getAllMessages();
+      return res.status(200).json(messages);
+    }
+    
+    // API برای وب - ارسال پیام جدید
+    if (req.query.action === 'send_message') {
+      const { user, message } = req.query;
+      if (!user || !message) {
+        return res.status(400).json({ error: 'Missing parameters' });
+      }
+      
+      const newMessage = messageDB.addMessage(user, message, true);
+      
+      // اطلاع به تلگرام
+      await notifyTelegram(token, newMessage);
+      
+      return res.status(200).json({ status: 'sent', id: newMessage.id });
+    }
+    
+    // API برای وب - بررسی پاسخ‌ها
+    if (req.query.action === 'check_replies') {
+      const messages = messageDB.getAllMessages();
+      const userMessages = messages.filter(msg => msg.user === req.query.user && msg.replied);
+      return res.status(200).json(userMessages);
+    }
+
+    return res.status(200).json({ 
+      message: 'Tina Chat API',
+      endpoints: {
+        'برای ارسال پیام': '/api/telegram?action=send_message&user=USERNAME&message=MESSAGE',
+        'برای دریافت پاسخ‌ها': '/api/telegram?action=check_replies&user=USERNAME'
+      }
     });
   }
 
   if (req.method === 'POST') {
-    const token = "6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4";
-    
+    // پردازش پیام از تلگرام (پاسخ شما)
     try {
       let update;
       if (typeof req.body === 'object') {
@@ -28,7 +61,7 @@ module.exports = async (req, res) => {
         req.on('end', async () => {
           try {
             update = JSON.parse(body);
-            await connectToHTMLBot(update, res, token);
+            await processTelegramMessage(update, res, token);
           } catch (error) {
             res.status(400).json({ error: 'Invalid JSON' });
           }
@@ -36,7 +69,7 @@ module.exports = async (req, res) => {
         return;
       }
       
-      await connectToHTMLBot(update, res, token);
+      await processTelegramMessage(update, res, token);
       
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -44,133 +77,91 @@ module.exports = async (req, res) => {
   }
 };
 
-// تابع برای ارتباط با هوش مصنوعی ربات HTML
-async function connectToHTMLBot(update, res, token) {
-  if (!update?.message) {
-    return res.status(200).json({ status: 'ok' });
-  }
+// اطلاع‌رسانی پیام جدید به تلگرام
+async function notifyTelegram(token, message) {
+  const text = `💬 پیام جدید از کاربر:\n\n👤 کاربر: ${message.user}\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ: /reply_${message.id}`;
+  
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      chat_id: 222666092, // چت آی دی شما
+      text: text,
+      parse_mode: 'Markdown'
+    })
+  });
+}
+
+// پردازش پیام از تلگرام
+async function processTelegramMessage(update, res, token) {
+  if (!update?.message) return res.status(200).json({ status: 'ok' });
 
   const chatId = update.message.chat.id;
-  const userMessage = update.message.text || '';
-  const firstName = update.message.chat.first_name || 'کاربر';
+  const text = update.message.text || '';
 
-  console.log(`📨 Message from ${firstName}: ${userMessage}`);
-
-  try {
-    // استفاده از هوش مصنوعی مشابه ربات HTML
-    const response = await getTinaAIResponse(userMessage, firstName);
-    
-    // ارسال پاسخ به تلگرام
-    await sendTelegramMessage(token, chatId, response);
-    
-    res.status(200).json({ status: 'success' });
-    
-  } catch (error) {
-    console.error('Error:', error);
-    
-    // پاسخ fallback در صورت خطا
-    await sendTelegramMessage(token, chatId, 
-      `⚡ متأسفم! ارتباط با سرور اصلی برقرار نشد.\n\nپیام شما: "${userMessage}"\n\nلطفاً کمی بعد مجدداً تلاش کنید.`
-    );
-    
-    res.status(200).json({ status: 'fallback_used' });
-  }
-}
-
-// هسته هوش مصنوعی - کاملاً مشابه ربات HTML
-async function getTinaAIResponse(message, userName) {
-  const lowerMessage = message.toLowerCase();
-  
-  // دیتابیس قیمت‌ها (مشابه ربات HTML)
-  const itemPrices = {
-    "الماس": "20 جم",
-    "شمشیر الماسی": "20 جم", 
-    "شمشیر آهنی": "10 جم",
-    "شمشیر سنگی": "5 جم",
-    "گوشت گاو": "1 جم",
-    "گوشت پخته": "2 جم",
-    "ابزار الماسی": "25 جم",
-    "ابزار آهنی": "12 جم",
-    "زره الماسی": "25 جم (هر قطعه)",
-    "سیب": "1 جم",
-    "نان": "1 جم",
-    "بلوک": "1 جم (برای 3 عدد)",
-    "بذر": "3-12 جم",
-    "کوره": "5 جم",
-    "سپر": "8 جم"
-  };
-
-  // تشخیص نوع سوال و پاسخ‌دهی هوشمند
-  if (lowerMessage.includes("قیمت") || lowerMessage.includes("چنده") || lowerMessage.includes("هزینه")) {
-    for (const [item, price] of Object.entries(itemPrices)) {
-      if (lowerMessage.includes(item.toLowerCase())) {
-        return `💰 قیمت ${item} در فروشگاه کانیلا: ${price}\n\nمی‌تونی برای خرید به فروشگاه مرکزی شهر مراجعه کنی!`;
+  // دستور پاسخ به پیام
+  if (text.startsWith('/reply_')) {
+    const parts = text.split(' ');
+    if (parts.length >= 3) {
+      const messageId = parseInt(parts[0].replace('/reply_', ''));
+      const replyText = parts.slice(1).join(' ');
+      
+      if (messageDB.addReply(messageId, replyText)) {
+        await sendTelegramMessage(token, chatId, '✅ پاسخ شما ارسال شد!');
+      } else {
+        await sendTelegramMessage(token, chatId, '❌ پیام مورد نظر یافت نشد!');
       }
+    } else {
+      await sendTelegramMessage(token, chatId, 
+        '📝 فرمت پاسخ:\n/reply_123 متن پاسخ شما\n\n(123 = شماره پیام)'
+      );
     }
-    return `📊 لیست قیمت‌های مهم:\n\n` +
-           Object.entries(itemPrices).map(([item, price]) => `• ${item}: ${price}`).join('\n') +
-           `\n\nبرای قیمت دقیق‌تر، نام آیتم رو بپرس!`;
+  }
+  
+  // دستور مشاهده پیام‌ها
+  else if (text === '/messages') {
+    const unreplied = messageDB.getUnrepliedMessages();
+    if (unreplied.length === 0) {
+      await sendTelegramMessage(token, chatId, '📭 هیچ پیام جدیدی وجود ندارد!');
+    } else {
+      let response = `📬 پیام‌های پاسخ داده نشده (${unreplied.length}):\n\n`;
+      unreplied.forEach(msg => {
+        response += `🔸 #${msg.id} - ${msg.user}: ${msg.message}\n`;
+        response += `⏰ ${new Date(msg.timestamp).toLocaleString('fa-IR')}\n`;
+        response += `📝 برای پاسخ: /reply_${msg.id} متن پاسخ\n\n`;
+      });
+      await sendTelegramMessage(token, chatId, response);
+    }
   }
 
-  if (lowerMessage.includes("سلام") || lowerMessage.includes("/start")) {
-    const greetings = [
-      `سلام ${userName} عزیز! به شهر کانیلا خوش آمدی! 🤗`,
-      `درود ${userName}! من تینا هستم، دستیار شهر کانیلا.`,
-      `سلام! خوبی؟ چطور می‌تونم کمک کنم؟`
-    ];
-    return greetings[Math.floor(Math.random() * greetings.length)] +
-           `\n\nمی‌تونی در مورد قیمت آیتم‌ها، نقشه شهر یا مأموریت‌ها سوال بپرسی!`;
+  else if (text === '/start') {
+    await sendTelegramMessage(token, chatId, 
+      `👨‍💼 پنل مدیریت چت تینا\n\n` +
+      `دستورات:\n` +
+      `📬 /messages - مشاهده پیام‌های جدید\n` +
+      `📝 /reply_123 متن - پاسخ به پیام\n` +
+      `ℹ️  /help - راهنما`
+    );
   }
 
-  if (lowerMessage.includes("کانیلا") || lowerMessage.includes("شهر")) {
-    return `🏰 شهر کانیلا:\n\n` +
-           `• بانک مرکزی\n• فروشگاه مرکزی\n• مزرعه عمومی\n• قلعه تاریخی\n• کتابخانه\n\n` +
-           `مختصات: X: 120, Y: 64, Z: -350\n` +
-           `می‌تونی از منوی نقشه استفاده کنی!`;
+  else if (text === '/help') {
+    await sendTelegramMessage(token, chatId, 
+      `📋 راهنمای مدیریت چت:\n\n` +
+      `1. کاربران در وب به آدرس زیر پیام می‌فرستند:\n` +
+      `https://al1r3z4-b.github.io/tina-assistant/Tina2.html\n\n` +
+      `2. شما پیام‌ها را اینجا می‌بینید\n` +
+      `3. با /reply پاسخ می‌دهید\n` +
+      `4. کاربر پاسخ را در وب می‌بیند`
+    );
   }
 
-  if (lowerMessage.includes("کمک") || lowerMessage.includes("راهنما") || lowerMessage.includes("/help")) {
-    return `📋 راهنمای تینا:\n\n` +
-           `🎮 می‌تونم در مورد:\n` +
-           `• قیمت آیتم‌ها (بپرس: "قیمت الماس")\n` +
-           `• نقشه شهر کانیلا\n` +
-           `• مکان‌های مهم\n` +
-           `• مأموریت‌ها\n` +
-           `• قوانین شهر\n\n` +
-           `🌐 نسخه کامل: https://al1r3z4-b.github.io/tina-assistant/Tina2.html`;
-  }
-
-  if (lowerMessage.includes("مأموریت") || lowerMessage.includes("quest")) {
-    return `🎯 مأموریت‌های فعال:\n\n` +
-           `1. گشت‌زنی در شهر (۱۰ امتیاز)\n` +
-           `2. جمع‌آوری منابع (۱۵ امتیاز)\n` +
-           `3. کمک به شهروندان (۲۰ امتیاز)\n\n` +
-           `برای شروع مأموریت به میدان اصلی شهر برو!`;
-  }
-
-  if (lowerMessage.includes("فروشگاه") || lowerMessage.includes("خرید")) {
-    return `🛍️ فروشگاه کانیلا:\n\n` +
-           `📍 مکان: مرکز شهر، جنب قلعه\n` +
-           `⏰ ساعت کاری: 24/7\n` +
-           `💰 سیستم خرید اقساطی موجود\n\n` +
-           `همه آیتم‌های ماینکرافت با قیمت مناسب!`;
-  }
-
-  // پاسخ‌های عمومی هوشمند
-  const smartResponses = [
-    `سوال جالبی پرسیدی! می‌تونی در مورد قیمت آیتم‌ها یا مکان‌های شهر بپرسی.`,
-    `هنوز این قابلیت رو کامل ندارم، اما می‌تونم در مورد شهر کانیلا کمک کنم!`,
-    `جوابتو نمی‌دونم، اما می‌تونی ازم بپرسی: "قیمت الماس" یا "نقشه شهر"`,
-    `برای اطلاعات بیشتر به نسخه وب من سر بزن: https://al1r3z4-b.github.io/tina-assistant/Tina2.html`,
-    `می‌خوای بازی کنی؟ نسخه وب من بازی‌های سرگرم کننده داره!`
-  ];
-
-  return smartResponses[Math.floor(Math.random() * smartResponses.length)];
+  res.status(200).json({ status: 'processed' });
 }
 
-// تابع ارسال پیام به تلگرام
 async function sendTelegramMessage(token, chatId, text) {
-  const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -181,10 +172,4 @@ async function sendTelegramMessage(token, chatId, text) {
       parse_mode: 'Markdown'
     })
   });
-  
-  const result = await response.json();
-  if (!result.ok) {
-    throw new Error(result.description);
-  }
-  return result;
 }
