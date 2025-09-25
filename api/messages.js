@@ -1,71 +1,59 @@
-// دیتابیس پیشرفته با GitHub Gist
-const GIST_ID = '4a0ab1a75a0218c3163223d442cf2e33'; // ID گیت خود را اینجا قرار دهید
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+// دیتابیس ساده برای ذخیره‌سازی داده‌ها
+let database = {
+  users: {},
+  messages: [],
+  notifications: [],
+  lastMessageId: 0,
+  lastUserId: 0,
+  lastNotificationId: 0
+};
 
-class TinaDatabase {
-  constructor() {
-    this.data = null;
-  }
-
-  async loadData() {
-    try {
-      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
-      const gist = await response.json();
-      this.data = JSON.parse(gist.files['tina_chat_database.json'].content);
-      return this.data;
-    } catch (error) {
-      console.error('Error loading data:', error);
-      this.data = { users: {}, messages: [], lastMessageId: 0, lastUserId: 0 };
-      return this.data;
+// بارگذاری از localStorage
+function loadDatabase() {
+  try {
+    const saved = localStorage.getItem('tina_database');
+    if (saved) {
+      database = JSON.parse(saved);
     }
+  } catch (e) {
+    console.log('Starting with fresh database');
   }
+}
 
-  async saveData() {
-    try {
-      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          files: {
-            'tina_chat_database.json': {
-              content: JSON.stringify(this.data, null, 2)
-            }
-          }
-        })
-      });
-      return response.ok;
-    } catch (error) {
-      console.error('Error saving data:', error);
-      return false;
-    }
+// ذخیره در localStorage
+function saveDatabase() {
+  try {
+    localStorage.setItem('tina_database', JSON.stringify(database));
+  } catch (e) {
+    console.log('Error saving database');
   }
+}
 
-  async createUser(username, password) {
-    await this.loadData();
-    
-    if (this.data.users[username]) {
+// بارگذاری اولیه
+loadDatabase();
+
+module.exports = {
+  // مدیریت کاربران
+  createUser: (username, password) => {
+    if (database.users[username]) {
       return { success: false, error: 'این نام کاربری قبلاً ثبت شده است' };
     }
 
-    const userId = ++this.data.lastUserId;
-    this.data.users[username] = {
+    const userId = ++database.lastUserId;
+    database.users[username] = {
       id: userId,
       password: password,
       createdAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString()
+      lastLogin: new Date().toISOString(),
+      isActive: true
     };
 
-    await this.saveData();
+    saveDatabase();
     return { success: true, userId: userId };
-  }
+  },
 
-  async loginUser(username, password) {
-    await this.loadData();
-    
-    const user = this.data.users[username];
+  loginUser: (username, password) => {
+    const user = database.users[username];
     if (!user) {
       return { success: false, error: 'نام کاربری یافت نشد' };
     }
@@ -75,16 +63,29 @@ class TinaDatabase {
     }
 
     user.lastLogin = new Date().toISOString();
-    await this.saveData();
+    saveDatabase();
 
     return { success: true, user: user };
-  }
+  },
 
-  async addMessage(userId, message, username) {
-    await this.loadData();
-    
+  getAllUsers: () => {
+    return database.users;
+  },
+
+  updateUserPassword: (username, newPassword) => {
+    const user = database.users[username];
+    if (user) {
+      user.password = newPassword;
+      saveDatabase();
+      return { success: true };
+    }
+    return { success: false, error: 'کاربر یافت نشد' };
+  },
+
+  // مدیریت پیام‌ها
+  addMessage: (userId, username, message) => {
     const newMessage = {
-      id: ++this.data.lastMessageId,
+      id: ++database.lastMessageId,
       userId: userId,
       username: username,
       message: message,
@@ -94,39 +95,68 @@ class TinaDatabase {
       replyTimestamp: null
     };
 
-    this.data.messages.push(newMessage);
-    await this.saveData();
+    database.messages.push(newMessage);
+    saveDatabase();
     return newMessage;
-  }
+  },
 
-  async addReply(messageId, reply) {
-    await this.loadData();
-    
-    const message = this.data.messages.find(msg => msg.id === parseInt(messageId));
+  addReply: (messageId, reply) => {
+    const message = database.messages.find(msg => msg.id === parseInt(messageId));
     if (message) {
       message.replied = true;
       message.reply = reply;
       message.replyTimestamp = new Date().toISOString();
-      await this.saveData();
+      saveDatabase();
       return true;
     }
     return false;
-  }
+  },
 
-  async getUserReplies(userId) {
-    await this.loadData();
-    return this.data.messages.filter(msg => msg.userId === userId && msg.replied);
-  }
+  getUserReplies: (userId) => {
+    return database.messages.filter(msg => msg.userId === userId && msg.replied);
+  },
 
-  async getUnrepliedMessages() {
-    await this.loadData();
-    return this.data.messages.filter(msg => !msg.replied);
-  }
+  getUnrepliedMessages: () => {
+    return database.messages.filter(msg => !msg.replied);
+  },
 
-  async getAllUsers() {
-    await this.loadData();
-    return this.data.users;
-  }
-}
+  // مدیریت اعلان‌ها
+  addNotification: (userId, title, message) => {
+    const newNotification = {
+      id: ++database.lastNotificationId,
+      userId: userId,
+      title: title,
+      message: message,
+      timestamp: new Date().toISOString(),
+      read: false
+    };
 
-module.exports = new TinaDatabase();
+    database.notifications.push(newNotification);
+    saveDatabase();
+    return newNotification;
+  },
+
+  getUserNotifications: (userId) => {
+    return database.notifications.filter(notif => notif.userId === userId && !notif.read);
+  },
+
+  markNotificationAsRead: (notificationId) => {
+    const notification = database.notifications.find(notif => notif.id === parseInt(notificationId));
+    if (notification) {
+      notification.read = true;
+      saveDatabase();
+      return true;
+    }
+    return false;
+  },
+
+  // آمار سیستم
+  getStats: () => {
+    return {
+      totalUsers: Object.keys(database.users).length,
+      totalMessages: database.messages.length,
+      unreadMessages: database.messages.filter(msg => !msg.replied).length,
+      activeUsers: Object.values(database.users).filter(user => user.isActive).length
+    };
+  }
+};
