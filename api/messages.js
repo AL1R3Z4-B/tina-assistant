@@ -3,6 +3,7 @@ const path = require('path');
 
 const dbPath = path.join(__dirname, 'database.json');
 
+// تابع بارگذاری دیتابیس
 function loadDatabase() {
   try {
     if (fs.existsSync(dbPath)) {
@@ -10,8 +11,10 @@ function loadDatabase() {
       return JSON.parse(data);
     }
   } catch (e) {
-    console.log('Error loading database:', e);
+    console.log('Starting with fresh database');
   }
+  
+  // دیتابیس پیش‌فرض
   return {
     users: {},
     messages: [],
@@ -22,16 +25,20 @@ function loadDatabase() {
   };
 }
 
+// تابع ذخیره دیتابیس
 function saveDatabase(data) {
   try {
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+    return true;
   } catch (e) {
-    console.log('Error saving database:', e);
+    console.error('Error saving database:', e);
+    return false;
   }
 }
 
 let database = loadDatabase();
 
+// ماژول اصلی
 module.exports = {
   createUser: (username, password) => {
     if (database.users[username]) {
@@ -84,7 +91,7 @@ module.exports = {
   addMessage: (userId, username, message) => {
     const newMessage = {
       id: ++database.lastMessageId,
-      userId: userId,
+      userId: parseInt(userId),
       username: username,
       message: message,
       timestamp: new Date().toISOString(),
@@ -111,7 +118,7 @@ module.exports = {
   },
 
   getUserReplies: (userId) => {
-    return database.messages.filter(msg => msg.userId === userId && msg.replied);
+    return database.messages.filter(msg => msg.userId === parseInt(userId) && msg.replied);
   },
 
   getUnrepliedMessages: () => {
@@ -121,7 +128,7 @@ module.exports = {
   addNotification: (userId, title, message) => {
     const newNotification = {
       id: ++database.lastNotificationId,
-      userId: userId,
+      userId: parseInt(userId),
       title: title,
       message: message,
       timestamp: new Date().toISOString(),
@@ -134,17 +141,7 @@ module.exports = {
   },
 
   getUserNotifications: (userId) => {
-    return database.notifications.filter(notif => notif.userId === userId && !notif.read);
-  },
-
-  markNotificationAsRead: (notificationId) => {
-    const notification = database.notifications.find(notif => notif.id === parseInt(notificationId));
-    if (notification) {
-      notification.read = true;
-      saveDatabase(database);
-      return true;
-    }
-    return false;
+    return database.notifications.filter(notif => notif.userId === parseInt(userId) && !notif.read);
   },
 
   getStats: () => {
