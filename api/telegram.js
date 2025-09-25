@@ -10,76 +10,89 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
-  const token = "6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4";
+  const BOT_TOKEN = "6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4";
+  const ADMIN_CHAT_ID = "222666092";
 
   try {
     if (req.method === 'GET') {
-      const { action, username, password, message, userid } = req.query;
+      const { action, username, password, message, userid, title, user } = req.query;
 
-      // ثبت نام کاربر جدید
+      // API برای وب‌اپلیکیشن
       if (action === 'register') {
-        if (!username || !password) {
-          return res.status(400).json({ error: 'نام کاربری و رمز عبور ضروری است' });
-        }
-        const result = await messageDB.createUser(username, password);
-        return res.status(result.success ? 200 : 400).json(result);
+        const result = messageDB.createUser(username, password);
+        return res.json(result);
       }
 
-      // ورود کاربر
       if (action === 'login') {
-        if (!username || !password) {
-          return res.status(400).json({ error: 'نام کاربری و رمز عبور ضروری است' });
-        }
-        const result = await messageDB.loginUser(username, password);
-        return res.status(result.success ? 200 : 400).json(result);
+        const result = messageDB.loginUser(username, password);
+        return res.json(result);
       }
 
-      // ارسال پیام
       if (action === 'send_message') {
-        if (!userid || !message || !username) {
-          return res.status(400).json({ error: 'پارامترهای ضروری ارسال نشده' });
-        }
-        
-        const newMessage = await messageDB.addMessage(parseInt(userid), message, username);
-        await notifyTelegram(token, newMessage);
-        
-        return res.status(200).json({ 
-          status: 'sent', 
-          id: newMessage.id 
-        });
+        const newMessage = messageDB.addMessage(parseInt(userid), username, message);
+        await notifyTelegram(BOT_TOKEN, ADMIN_CHAT_ID, newMessage);
+        return res.json({ status: 'sent', id: newMessage.id });
       }
 
-      // دریافت پاسخ‌ها
       if (action === 'check_replies') {
-        if (!userid) {
-          return res.status(400).json({ error: 'شناسه کاربر ضروری است' });
+        const replies = messageDB.getUserReplies(parseInt(userid));
+        return res.json(replies);
+      }
+
+      if (action === 'check_notifications') {
+        const notifications = messageDB.getUserNotifications(parseInt(userid));
+        return res.json(notifications);
+      }
+
+      // API برای مدیریت (فقط ادمین)
+      if (action === 'admin_get_users') {
+        const users = messageDB.getAllUsers();
+        return res.json(users);
+      }
+
+      if (action === 'admin_send_notification') {
+        if (user === 'all') {
+          // ارسال به همه کاربران
+          const users = messageDB.getAllUsers();
+          Object.keys(users).forEach(username => {
+            const userObj = users[username];
+            messageDB.addNotification(userObj.id, title, message);
+          });
+          return res.json({ success: true, sentTo: 'all users' });
+        } else {
+          // ارسال به کاربر خاص
+          const users = messageDB.getAllUsers();
+          const userObj = users[user];
+          if (userObj) {
+            messageDB.addNotification(userObj.id, title, message);
+            return res.json({ success: true, sentTo: user });
+          }
+          return res.json({ success: false, error: 'User not found' });
         }
-        
-        const userReplies = await messageDB.getUserReplies(parseInt(userid));
-        return res.status(200).json(userReplies);
       }
 
-      // دریافت پیام‌های پاسخ داده نشده (برای تلگرام)
-      if (action === 'get_unreplied') {
-        const unreplied = await messageDB.getUnrepliedMessages();
-        return res.status(200).json(unreplied);
+      if (action === 'admin_stats') {
+        const stats = messageDB.getStats();
+        return res.json(stats);
       }
 
-      return res.status(200).json({ 
-        message: 'Tina Chat API - Active',
-        timestamp: new Date().toISOString()
+      return res.json({ 
+        message: 'Tina Assistant API',
+        version: '2.0',
+        admin: 'برای مدیریت از دستورات تلگرام استفاده کنید'
       });
     }
 
     if (req.method === 'POST') {
+      // پردازش پیام‌های تلگرام
       let update = req.body;
       
       if (typeof req.body === 'string') {
         update = JSON.parse(req.body);
       }
 
-      await processTelegramMessage(update, token);
-      return res.status(200).json({ status: 'processed' });
+      await processTelegramMessage(update, BOT_TOKEN, ADMIN_CHAT_ID);
+      return res.json({ status: 'processed' });
     }
 
   } catch (error) {
@@ -88,96 +101,10 @@ module.exports = async (req, res) => {
   }
 };
 
-async function notifyTelegram(token, message) {
-  const text = `💬 پیام جدید از کاربر:\n\n👤 کاربر: ${message.username} (ID: ${message.userId})\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ: /reply_${message.id}`;
+// اطلاع‌رسانی به تلگرام
+async function notifyTelegram(token, chatId, message) {
+  const text = `💬 پیام جدید از کاربر:\n\n👤 کاربر: ${message.username} (ID: ${message.userId})\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\n📩 برای پاسخ: /reply_${message.id}`;
   
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      chat_id: 222666092,
-      text: text,
-      parse_mode: 'Markdown'
-    })
-  });
-}
-
-async function processTelegramMessage(update, token) {
-  if (!update?.message?.text) return;
-
-  const chatId = update.message.chat.id;
-  const text = update.message.text;
-
-  // پاسخ به پیام
-  if (text.startsWith('/reply_')) {
-    const parts = text.split(' ');
-    if (parts.length >= 2) {
-      const messageId = parts[0].replace('/reply_', '');
-      const replyText = parts.slice(1).join(' ');
-      
-      const success = await messageDB.addReply(messageId, replyText);
-      
-      if (success) {
-        await sendTelegramMessage(token, chatId, '✅ پاسخ شما با موفقیت ارسال شد!');
-      } else {
-        await sendTelegramMessage(token, chatId, '❌ پیام مورد نظر یافت نشد!');
-      }
-    } else {
-      await sendTelegramMessage(token, chatId, 
-        '📝 فرمت صحیح پاسخ:\n\n`/reply_123 متن پاسخ شما`\n\n(123 = شماره پیام)'
-      );
-    }
-  }
-  
-  // مشاهده پیام‌های پاسخ داده نشده
-  else if (text === '/messages' || text === '/start') {
-    const unreplied = await messageDB.getUnrepliedMessages();
-    
-    if (unreplied.length === 0) {
-      await sendTelegramMessage(token, chatId, '📭 هیچ پیام جدیدی وجود ندارد!');
-    } else {
-      let response = `📬 پیام‌های پاسخ داده نشده (${unreplied.length}):\n\n`;
-      
-      unreplied.forEach((msg, index) => {
-        response += `🔸 #${msg.id} - ${msg.username} (ID: ${msg.userId})\n`;
-        response += `📝 ${msg.message}\n`;
-        response += `⏰ ${new Date(msg.timestamp).toLocaleString('fa-IR')}\n`;
-        response += `📩 برای پاسخ: /reply_${msg.id} متن پاسخ\n\n`;
-      });
-      
-      await sendTelegramMessage(token, chatId, response);
-    }
-  }
-
-  // راهنما
-  else if (text === '/help') {
-    await sendTelegramMessage(token, chatId, 
-      `📋 راهنمای مدیریت چت تینا:\n\n` +
-      `📬 /messages - مشاهده پیام‌های جدید\n` +
-      `📝 /reply_123 - پاسخ به پیام شماره 123\n` +
-      `👥 /users - مشاهده کاربران ثبت‌نام شده\n` +
-      `ℹ️  /help - نمایش راهنما`
-    );
-  }
-
-  // مشاهده کاربران
-  else if (text === '/users') {
-    const users = await messageDB.getAllUsers();
-    let response = `👥 کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
-    
-    Object.entries(users).forEach(([username, user]) => {
-      response += `🔸 ${username} (ID: ${user.id})\n`;
-      response += `📅 عضو since: ${new Date(user.createdAt).toLocaleString('fa-IR')}\n`;
-      response += `🔐 آخرین ورود: ${new Date(user.lastLogin).toLocaleString('fa-IR')}\n\n`;
-    });
-    
-    await sendTelegramMessage(token, chatId, response);
-  }
-}
-
-async function sendTelegramMessage(token, chatId, text) {
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
     headers: {
@@ -189,4 +116,164 @@ async function sendTelegramMessage(token, chatId, text) {
       parse_mode: 'Markdown'
     })
   });
+}
+
+// پردازش دستورات تلگرام
+async function processTelegramMessage(update, token, adminChatId) {
+  if (!update?.message?.text) return;
+
+  const chatId = update.message.chat.id;
+  const text = update.message.text;
+  const messageId = update.message.message_id;
+
+  // فقط ادمین مجاز است
+  if (chatId.toString() !== adminChatId) {
+    await sendTelegramMessage(token, chatId, '❌ شما دسترسی ادمین ندارید');
+    return;
+  }
+
+  // پاسخ به پیام کاربر
+  if (text.startsWith('/reply_')) {
+    const parts = text.split(' ');
+    if (parts.length >= 2) {
+      const msgId = parts[0].replace('/reply_', '');
+      const replyText = parts.slice(1).join(' ');
+      
+      const success = messageDB.addReply(msgId, replyText);
+      await sendTelegramMessage(token, chatId, success ? 
+        '✅ پاسخ با موفقیت ارسال شد' : 
+        '❌ پیام مورد نظر یافت نشد'
+      );
+    }
+  }
+
+  // مشاهده کاربران
+  else if (text === '/users') {
+    const users = messageDB.getAllUsers();
+    let response = `👥 کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
+    
+    Object.entries(users).forEach(([username, user]) => {
+      response += `🔸 ${username} (ID: ${user.id})\n`;
+      response += `📅 عضویت: ${new Date(user.createdAt).toLocaleString('fa-IR')}\n`;
+      response += `🔐 آخرین ورود: ${new Date(user.lastLogin).toLocaleString('fa-IR')}\n`;
+      response += `📊 وضعیت: ${user.isActive ? 'فعال' : 'غیرفعال'}\n`;
+      response += `────────────\n`;
+    });
+    
+    await sendTelegramMessage(token, chatId, response);
+  }
+
+  // تغییر رمز عبور کاربر
+  else if (text.startsWith('/pass_')) {
+    const parts = text.split(' ');
+    if (parts.length >= 3) {
+      const username = parts[0].replace('/pass_', '');
+      const newPassword = parts.slice(1).join(' ');
+      
+      const result = messageDB.updateUserPassword(username, newPassword);
+      await sendTelegramMessage(token, chatId, result.success ?
+        `✅ رمز عبور ${username} تغییر یافت` :
+        `❌ کاربر ${username} یافت نشد`
+      );
+    }
+  }
+
+  // ارسال اعلان به کاربر
+  else if (text.startsWith('/notify_')) {
+    const parts = text.split(' ');
+    if (parts.length >= 3) {
+      const target = parts[0].replace('/notify_', '');
+      const notificationText = parts.slice(1).join(' ');
+      
+      let result;
+      if (target === 'all') {
+        result = { success: true, sentTo: 'all users' };
+        const users = messageDB.getAllUsers();
+        Object.keys(users).forEach(username => {
+          const user = users[username];
+          messageDB.addNotification(user.id, '📢 اعلان از ادمین', notificationText);
+        });
+      } else {
+        const users = messageDB.getAllUsers();
+        const user = users[target];
+        if (user) {
+          messageDB.addNotification(user.id, '📢 اعلان از ادمین', notificationText);
+          result = { success: true, sentTo: target };
+        } else {
+          result = { success: false, error: 'User not found' };
+        }
+      }
+      
+      await sendTelegramMessage(token, chatId, result.success ?
+        `✅ اعلان به ${result.sentTo} ارسال شد` :
+        `❌ ارسال اعلان ناموفق بود`
+      );
+    }
+  }
+
+  // آمار سیستم
+  else if (text === '/stats') {
+    const stats = messageDB.getStats();
+    const response = `📊 آمار سیستم:\n\n` +
+      `👥 کاربران کل: ${stats.totalUsers}\n` +
+      `💬 پیام‌های کل: ${stats.totalMessages}\n` +
+      `📨 پیام‌های خوانده نشده: ${stats.unreadMessages}\n` +
+      `✅ کاربران فعال: ${stats.activeUsers}`;
+    
+    await sendTelegramMessage(token, chatId, response);
+  }
+
+  // راهنما
+  else if (text === '/help' || text === '/start') {
+    const helpText = `📋 دستورات مدیریت تینا:\n\n` +
+      `📬 /users - مشاهده تمام کاربران\n` +
+      `📊 /stats - آمار سیستم\n` +
+      `📝 /reply_123 متن - پاسخ به پیام شماره 123\n` +
+      `🔐 /pass_username رمزجدید - تغییر رمز کاربر\n` +
+      `📢 /notify_all متن - ارسال اعلان به همه\n` +
+      `📢 /notify_username متن - ارسال اعلان به کاربر خاص\n` +
+      `ℹ️  /help - نمایش این راهنما\n\n` +
+      `🌐 کاربران از طریق این لینک ثبت‌نام می‌کنند:\n` +
+      `https://al1r3z4-b.github.io/tina-assistant/`;
+    
+    await sendTelegramMessage(token, chatId, helpText);
+  }
+
+  // مشاهده پیام‌های پاسخ داده نشده
+  else if (text === '/messages') {
+    const unreplied = messageDB.getUnrepliedMessages();
+    
+    if (unreplied.length === 0) {
+      await sendTelegramMessage(token, chatId, '📭 هیچ پیام جدیدی وجود ندارد!');
+    } else {
+      let response = `📬 پیام‌های پاسخ داده نشده (${unreplied.length}):\n\n`;
+      
+      unreplied.forEach((msg, index) => {
+        response += `🔸 #${msg.id} - ${msg.username}\n`;
+        response += `📝 ${msg.message}\n`;
+        response += `⏰ ${new Date(msg.timestamp).toLocaleString('fa-IR')}\n`;
+        response += `📩 برای پاسخ: /reply_${msg.id} متن پاسخ\n\n`;
+      });
+      
+      await sendTelegramMessage(token, chatId, response);
+    }
+  }
+}
+
+async function sendTelegramMessage(token, chatId, text) {
+  try {
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'Markdown'
+      })
+    });
+  } catch (error) {
+    console.error('Error sending Telegram message:', error);
+  }
 }
