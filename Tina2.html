@@ -3808,46 +3808,56 @@
         }
     </script>
 
-<!-- سیستم چت زنده -->
+<!-- سیستم چت زنده بهبود یافته -->
 <div id="liveChatWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 10000;">
-  <div id="chatButton" style="background: #25D366; color: white; padding: 15px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+  <div id="chatButton" style="background: #128C7E; color: white; padding: 15px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.3s ease;">
     💬
   </div>
   
-  <div id="chatBox" style="display: none; position: absolute; bottom: 70px; right: 0; width: 300px; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
-    <div style="background: #8a2be2; color: white; padding: 15px; border-radius: 10px 10px 0 0;">
+  <div id="chatBox" style="display: none; position: absolute; bottom: 70px; right: 0; width: 320px; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); border: 1px solid #e0e0e0;">
+    <div style="background: #128C7E; color: white; padding: 15px; border-radius: 10px 10px 0 0;">
       <strong>چت زنده با پشتیبانی</strong>
       <span id="closeChat" style="float: left; cursor: pointer;">✕</span>
     </div>
     
-    <div id="chatMessages" style="height: 200px; overflow-y: auto; padding: 10px; font-size: 14px;">
+    <div id="chatMessages" style="height: 250px; overflow-y: auto; padding: 10px; font-size: 14px; background: #f0f2f5;">
       <div style="text-align: center; color: #666; padding: 20px;">
-        در حال اتصال...
+        در حال اتصال به پشتیبانی...
       </div>
     </div>
     
     <div style="padding: 10px; border-top: 1px solid #eee;">
-      <input type="text" id="chatInput" placeholder="پیام خود را بنویسید..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;">
-      <button onclick="sendChatMessage()" style="background: #8a2be2; color: white; border: none; padding: 8px 15px; border-radius: 5px; width: 100%; cursor: pointer;">
-        ارسال
+      <input type="text" id="chatInput" placeholder="پیام خود را بنویسید..." style="width: 100%; padding: 10px 15px; border: 1px solid #ddd; border-radius: 20px; margin-bottom: 5px; outline: none;">
+      <button onclick="sendChatMessage()" style="background: #128C7E; color: white; border: none; padding: 10px 15px; border-radius: 5px; width: 100%; cursor: pointer; font-size: 14px;">
+        ارسال پیام
       </button>
     </div>
   </div>
 </div>
 
 <script>
-// سیستم چت زنده
+// سیستم چت زنده بهبود یافته
 let chatInterval;
-let currentUser = 'user_' + Math.random().toString(36).substr(2, 9);
+let currentUser = localStorage.getItem('tina_chat_userid');
+
+if (!currentUser) {
+    currentUser = 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('tina_chat_userid', currentUser);
+}
+
+const API_BASE = 'https://tina-assistant-4baj.vercel.app/api/telegram';
 
 // باز کردن/بستن چت
 document.getElementById('chatButton').addEventListener('click', function() {
   const chatBox = document.getElementById('chatBox');
-  chatBox.style.display = chatBox.style.display === 'none' ? 'block' : 'none';
+  const isVisible = chatBox.style.display === 'block';
   
-  if (chatBox.style.display === 'block') {
+  chatBox.style.display = isVisible ? 'none' : 'block';
+  
+  if (!isVisible) {
     loadChatMessages();
-    chatInterval = setInterval(loadChatMessages, 3000);
+    chatInterval = setInterval(loadChatMessages, 2000);
+    document.getElementById('chatInput').focus();
   } else {
     clearInterval(chatInterval);
   }
@@ -3864,53 +3874,99 @@ function sendChatMessage() {
   const message = input.value.trim();
   
   if (message) {
-    // نمایش پیام کاربر
+    // نمایش پیام کاربر بلافاصله
     addMessageToChat('شما', message, true);
+    input.value = '';
     
     // ارسال به سرور
-    fetch(`https://tina-assistant-4baj.vercel.app/api/telegram?action=send_message&user=${currentUser}&message=${encodeURIComponent(message)}`)
+    fetch(`${API_BASE}?action=send_message&user=${currentUser}&message=${encodeURIComponent(message)}`)
       .then(response => response.json())
       .then(data => {
-        if (data.status === 'sent') {
-          input.value = '';
+        if (data.status !== 'sent') {
+          addMessageToChat('سیستم', 'خطا در ارسال پیام. لطفاً مجدداً تلاش کنید.', false);
         }
       })
       .catch(error => {
-        addMessageToChat('سیستم', 'خطا در ارسال پیام!', false);
+        console.error('Error sending message:', error);
+        addMessageToChat('سیستم', 'خطا در اتصال به سرور. لطفاً بعداً تلاش کنید.', false);
       });
   }
 }
 
 // دریافت پیام‌ها
 function loadChatMessages() {
-  fetch(`https://tina-assistant-4baj.vercel.app/api/telegram?action=check_replies&user=${currentUser}`)
-    .then(response => response.json())
+  fetch(`${API_BASE}?action=check_replies&user=${currentUser}`)
+    .then(response => {
+      if (!response.ok) throw new Error('Network error');
+      return response.json();
+    })
     .then(messages => {
       const chatContainer = document.getElementById('chatMessages');
-      chatContainer.innerHTML = '';
       
-      messages.forEach(msg => {
-        if (msg.reply) {
-          addMessageToChat('پشتیبانی', msg.reply, false);
+      // پاک کردن فقط پیام‌های سیستم
+      const systemMessages = chatContainer.querySelectorAll('.system-message');
+      systemMessages.forEach(msg => msg.remove());
+      
+      if (messages && messages.length > 0) {
+        // نمایش پاسخ‌های جدید
+        messages.forEach(msg => {
+          if (msg.reply && !document.getElementById(`msg-${msg.id}`)) {
+            addMessageToChat('پشتیبانی', msg.reply, false, msg.id);
+          }
+        });
+        
+        // به روزرسانی وضعیت اتصال
+        const statusDiv = document.createElement('div');
+        statusDiv.className = 'system-message connection-status';
+        statusDiv.style.cssText = 'text-align: center; color: #666; padding: 10px; font-size: 12px;';
+        statusDiv.innerHTML = '✅ متصل به پشتیبانی';
+        chatContainer.appendChild(statusDiv);
+      } else {
+        // نمایش وضعیت اتصال
+        if (!chatContainer.querySelector('.connection-status')) {
+          const statusDiv = document.createElement('div');
+          statusDiv.className = 'system-message connection-status';
+          statusDiv.style.cssText = 'text-align: center; color: #666; padding: 10px; font-size: 12px;';
+          statusDiv.innerHTML = '✅ متصل به پشتیبانی - منتظر پاسخ...';
+          chatContainer.appendChild(statusDiv);
         }
-      });
-      
-      if (messages.length === 0) {
-        chatContainer.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">هنوز پیامی ارسال نکرده‌اید...</div>';
       }
+      
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     })
     .catch(error => {
-      console.error('Error loading messages:', error);
+      const chatContainer = document.getElementById('chatMessages');
+      if (!chatContainer.querySelector('.connection-error')) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'system-message connection-error';
+        errorDiv.style.cssText = 'text-align: center; color: #ff6b6b; padding: 10px; font-size: 12px;';
+        errorDiv.innerHTML = '⚠️ مشکل در اتصال - لطفاً صفحه را رفرش کنید';
+        chatContainer.appendChild(errorDiv);
+      }
     });
 }
 
 // اضافه کردن پیام به چت
-function addMessageToChat(sender, message, isUser) {
+function addMessageToChat(sender, message, isUser, messageId = null) {
   const chatContainer = document.getElementById('chatMessages');
+  
+  // اگر پیام قبلاً نمایش داده شده، از نمایش مجدد جلوگیری کن
+  if (messageId && document.getElementById(`msg-${messageId}`)) {
+    return;
+  }
+  
   const messageDiv = document.createElement('div');
-  messageDiv.style.cssText = `margin: 5px 0; padding: 8px; border-radius: 10px; max-width: 80%; 
-                              ${isUser ? 'background: #e3f2fd; margin-left: 20%;' : 'background: #f5f5f5; margin-right: 20%;'}`;
-  messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+  if (messageId) {
+    messageDiv.id = `msg-${messageId}`;
+  }
+  
+  messageDiv.style.cssText = `margin: 10px 0; padding: 8px 12px; border-radius: 15px; max-width: 85%; 
+                              word-wrap: break-word; clear: both;
+                              ${isUser ? 
+                                'background: #dcf8c6; margin-left: 15%; float: right;' : 
+                                'background: #ffffff; margin-right: 15%; float: left; border: 1px solid #e0e0e0;'}`;
+  
+  messageDiv.innerHTML = `<strong style="color: #128C7E;">${sender}:</strong><br>${message}`;
   chatContainer.appendChild(messageDiv);
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
@@ -3921,7 +3977,12 @@ document.getElementById('chatInput').addEventListener('keypress', function(e) {
     sendChatMessage();
   }
 });
-</script>
 
+// بارگذاری اولیه پیام‌ها
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(loadChatMessages, 1000);
+});
+</script>
+	
 </body>
 </html>
