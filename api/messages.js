@@ -1,39 +1,38 @@
-// دیتابیس ساده برای ذخیره‌سازی داده‌ها
-let database = {
-  users: {},
-  messages: [],
-  notifications: [],
-  lastMessageId: 0,
-  lastUserId: 0,
-  lastNotificationId: 0
-};
+const fs = require('fs');
+const path = require('path');
 
-// بارگذاری از localStorage
+const dbPath = path.join(__dirname, 'database.json');
+
 function loadDatabase() {
   try {
-    const saved = localStorage.getItem('tina_database');
-    if (saved) {
-      database = JSON.parse(saved);
+    if (fs.existsSync(dbPath)) {
+      const data = fs.readFileSync(dbPath, 'utf8');
+      return JSON.parse(data);
     }
   } catch (e) {
-    console.log('Starting with fresh database');
+    console.log('Error loading database:', e);
   }
+  return {
+    users: {},
+    messages: [],
+    notifications: [],
+    lastMessageId: 0,
+    lastUserId: 0,
+    lastNotificationId: 0
+  };
 }
 
-// ذخیره در localStorage
-function saveDatabase() {
+function saveDatabase(data) {
   try {
-    localStorage.setItem('tina_database', JSON.stringify(database));
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
   } catch (e) {
-    console.log('Error saving database');
+    console.log('Error saving database:', e);
   }
 }
 
-// بارگذاری اولیه
-loadDatabase();
+let database = loadDatabase();
 
 module.exports = {
-  // مدیریت کاربران
   createUser: (username, password) => {
     if (database.users[username]) {
       return { success: false, error: 'این نام کاربری قبلاً ثبت شده است' };
@@ -48,7 +47,7 @@ module.exports = {
       isActive: true
     };
 
-    saveDatabase();
+    saveDatabase(database);
     return { success: true, userId: userId };
   },
 
@@ -63,7 +62,7 @@ module.exports = {
     }
 
     user.lastLogin = new Date().toISOString();
-    saveDatabase();
+    saveDatabase(database);
 
     return { success: true, user: user };
   },
@@ -76,13 +75,12 @@ module.exports = {
     const user = database.users[username];
     if (user) {
       user.password = newPassword;
-      saveDatabase();
+      saveDatabase(database);
       return { success: true };
     }
     return { success: false, error: 'کاربر یافت نشد' };
   },
 
-  // مدیریت پیام‌ها
   addMessage: (userId, username, message) => {
     const newMessage = {
       id: ++database.lastMessageId,
@@ -96,7 +94,7 @@ module.exports = {
     };
 
     database.messages.push(newMessage);
-    saveDatabase();
+    saveDatabase(database);
     return newMessage;
   },
 
@@ -106,7 +104,7 @@ module.exports = {
       message.replied = true;
       message.reply = reply;
       message.replyTimestamp = new Date().toISOString();
-      saveDatabase();
+      saveDatabase(database);
       return true;
     }
     return false;
@@ -120,7 +118,6 @@ module.exports = {
     return database.messages.filter(msg => !msg.replied);
   },
 
-  // مدیریت اعلان‌ها
   addNotification: (userId, title, message) => {
     const newNotification = {
       id: ++database.lastNotificationId,
@@ -132,7 +129,7 @@ module.exports = {
     };
 
     database.notifications.push(newNotification);
-    saveDatabase();
+    saveDatabase(database);
     return newNotification;
   },
 
@@ -144,13 +141,12 @@ module.exports = {
     const notification = database.notifications.find(notif => notif.id === parseInt(notificationId));
     if (notification) {
       notification.read = true;
-      saveDatabase();
+      saveDatabase(database);
       return true;
     }
     return false;
   },
 
-  // آمار سیستم
   getStats: () => {
     return {
       totalUsers: Object.keys(database.users).length,
