@@ -1630,6 +1630,79 @@
                 align-items: center;
             }
         }
+        
+        /* رفع مشکل UI موبایل - اضافه شده */
+        @media (max-width: 768px) {
+          #chatBox {
+            width: 95vw !important;
+            right: 2.5vw !important;
+            left: 2.5vw !important;
+            bottom: 80px !important;
+            max-width: none !important;
+          }
+  
+          #chatMessages {
+            height: 200px !important;
+            font-size: 14px !important;
+            padding: 8px !important;
+          }
+  
+          .tab-button {
+            padding: 8px 4px !important;
+            font-size: 12px !important;
+            min-height: 40px !important;
+          }
+  
+          #chatInput {
+            font-size: 16px !important;
+            padding: 12px !important;
+            margin-bottom: 8px !important;
+          }
+          
+          #chatMessages div {
+            max-width: 90% !important;
+            margin: 6px 0 !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+            line-height: 1.4 !important;
+          }
+  
+          /* بهبود نمایش پنل کاربری */
+          #liveChatWidget {
+            right: 10px !important;
+            bottom: 10px !important;
+            z-index: 10000 !important;
+          }
+          
+          #chatButton {
+            width: 50px !important;
+            height: 50px !important;
+            font-size: 20px !important;
+          }
+        }
+
+        /* بهبود کلی برای موبایل */
+        @media (max-width: 480px) {
+          .container {
+            height: 95vh !important;
+            margin: 10px !important;
+            width: calc(100vw - 20px) !important;
+          }
+  
+          .header {
+            padding: 15px !important;
+          }
+  
+          .avatar {
+            width: 50px !important;
+            height: 50px !important;
+          }
+  
+          .header-text h1 {
+            font-size: 18px !important;
+          }
+        }
+        
     </style>
 </head>
 <body>
