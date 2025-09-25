@@ -57,7 +57,7 @@ app.get('/api/telegram', async (req, res) => {
       const newMessage = messageDB.addMessage(parseInt(userid), username, message);
       console.log('💾 Message saved to database:', newMessage);
       
-      // ارسال به تلگرام
+      // ارسال به تلگرام (بدون Markdown)
       const telegramResult = await notifyTelegram(BOT_TOKEN, ADMIN_CHAT_ID, newMessage);
       console.log('📤 Telegram send result:', telegramResult);
       
@@ -102,20 +102,19 @@ app.post('/api/telegram', async (req, res) => {
 
 // توابع کمکی
 async function notifyTelegram(token, chatId, message) {
-  const text = `💬 پیام جدید از کاربر:\n\n👤 کاربر: ${message.username} (ID: ${message.userId})\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\n📩 برای پاسخ: /reply_${message.id}`;
+  // متن ساده بدون Markdown
+  const text = `پیام جدید از کاربر:\n\nکاربر: ${message.username} (ID: ${message.userId})\nپیام: ${message.message}\nزمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ: /reply_${message.id}`;
   
   try {
     console.log('📤 Attempting to send to Telegram...');
-    console.log('🔑 Token exists:', !!token);
-    console.log('👤 Chat ID:', chatId);
     
     const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         chat_id: chatId, 
-        text: text, 
-        parse_mode: 'Markdown' 
+        text: text
+        // parse_mode حذف شد
       })
     });
     
@@ -158,11 +157,11 @@ async function processTelegramMessage(update, token, adminChatId) {
   }
   else if (text === '/users') {
     const users = messageDB.getAllUsers();
-    let response = `👥 کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
+    let response = `کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
     
     Object.entries(users).forEach(([username, user]) => {
-      response += `🔸 ${username} (ID: ${user.id})\n`;
-      response += `📅 عضویت: ${new Date(user.createdAt).toLocaleString('fa-IR')}\n`;
+      response += `${username} (ID: ${user.id})\n`;
+      response += `عضویت: ${new Date(user.createdAt).toLocaleString('fa-IR')}\n`;
       response += `────────────\n`;
     });
     
@@ -170,21 +169,21 @@ async function processTelegramMessage(update, token, adminChatId) {
   }
   else if (text === '/stats') {
     const stats = messageDB.getStats();
-    const response = `📊 آمار سیستم:\n\n` +
-      `👥 کاربران کل: ${stats.totalUsers}\n` +
-      `💬 پیام‌های کل: ${stats.totalMessages}\n` +
-      `📨 پیام‌های خوانده نشده: ${stats.unreadMessages}\n` +
-      `✅ کاربران فعال: ${stats.activeUsers}`;
+    const response = `آمار سیستم:\n\n` +
+      `کاربران کل: ${stats.totalUsers}\n` +
+      `پیام‌های کل: ${stats.totalMessages}\n` +
+      `پیام‌های خوانده نشده: ${stats.unreadMessages}\n` +
+      `کاربران فعال: ${stats.activeUsers}`;
     
     await sendTelegramMessage(token, chatId, response);
   }
   else if (text === '/start') {
-    const helpText = `🤖 ربات پشتیبانی تینا\n\n` +
-      `📋 دستورات قابل استفاده:\n` +
+    const helpText = `ربات پشتیبانی تینا\n\n` +
+      `دستورات قابل استفاده:\n` +
       `/users - مشاهده کاربران\n` +
       `/stats - آمار سیستم\n` +
       `/reply_123 متن - پاسخ به پیام\n` +
-      `\n🌐 وب‌سایت: https://al1r3z4-b.github.io/tina-assistant/`;
+      `\nوب‌سایت: https://al1r3z4-b.github.io/tina-assistant/`;
     
     await sendTelegramMessage(token, chatId, helpText);
   }
@@ -197,8 +196,8 @@ async function sendTelegramMessage(token, chatId, text) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: chatId,
-        text: text,
-        parse_mode: 'Markdown'
+        text: text
+        // parse_mode حذف شد
       })
     });
     return await response.json();
@@ -212,5 +211,4 @@ async function sendTelegramMessage(token, chatId, text) {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Tina Assistant API running on port ${PORT}`);
   console.log(`📍 Health: https://tina-assistant-api.onrender.com/`);
-  console.log(`🔗 Webhook: https://tina-assistant-api.onrender.com/api/telegram`);
 });
