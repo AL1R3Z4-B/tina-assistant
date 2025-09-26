@@ -1703,6 +1703,45 @@
           }
         }
         
+        /* بهبود موبایل - ساده‌تر */
+        @media (max-width: 768px) {
+          #chatBox {
+            width: 95vw !important;
+            right: 2.5vw !important;
+            left: 2.5vw !important;
+            bottom: 80px !important;
+          }
+  
+          #chatMessages {
+            height: 200px !important;
+            font-size: 14px !important;
+          }
+  
+          .tab-button {
+            padding: 10px 5px !important;
+            font-size: 12px !important;
+          }
+  
+          #chatInput {
+            font-size: 16px !important;
+            padding: 12px !important;
+          }
+  
+          #chatMessages div {
+            max-width: 90% !important;
+            margin: 8px 0 !important;
+            padding: 10px !important;
+            font-size: 14px !important;
+          }
+  
+          /* دکمه چت شناور */
+          #chatButton {
+            width: 50px !important;
+            height: 50px !important;
+            font-size: 20px !important;
+          }
+        }
+        
     </style>
 </head>
 <body>
@@ -4236,7 +4275,7 @@ function loadProfile() {
   `;
 }
 
-// ارسال پیام
+// ارسال پیام - نسخه جدید
 async function sendChatMessage() {
   if (!currentUser) {
     showLoginModal();
@@ -4247,6 +4286,7 @@ async function sendChatMessage() {
   const message = input.value.trim();
   
   if (message) {
+    // اول پیام رو نمایش بده
     addMessageToChat('شما', message, true);
     input.value = '';
     
@@ -4254,20 +4294,36 @@ async function sendChatMessage() {
       const response = await fetch(`${API_BASE}?action=send_message&userid=${currentUser.id}&username=${encodeURIComponent(currentUser.username)}&message=${encodeURIComponent(message)}`);
       const result = await response.json();
       
-      if (!result.status === 'sent') {
-        addMessageToChat('سیستم', '⚠️ خطا در ارسال پیام', false);
+      if (result.status === 'sent') {
+        console.log('✅ پیام با موفقیت ارسال شد');
+      } else {
+        // اگر خطا داشت، پیام رو قرمز کن
+        markMessageAsFailed(message);
       }
     } catch (error) {
-      addMessageToChat('سیستم', '⚠️ خطا در اتصال به سرور', false);
+      console.error('❌ خطا در ارسال پیام:', error);
+      markMessageAsFailed(message);
     }
   }
 }
 
-// نمایش پیام در چت
+// علامت گذاری پیام ناموفق
+function markMessageAsFailed(message) {
+  const chatMessages = document.getElementById('chatMessages');
+  const messages = chatMessages.getElementsByTagName('div');
+  const lastMessage = messages[messages.length - 1];
+  
+  if (lastMessage && lastMessage.textContent.includes(message)) {
+    lastMessage.style.background = '#ffebee';
+    lastMessage.style.border = '1px solid #f44336';
+    lastMessage.innerHTML += '<br><small style="color: #f44336;">⚠️ ارسال ناموفق - دوباره تلاش کنید</small>';
+  }
+}
+
+// نمایش پیام در چت - نسخه جدید
 function addMessageToChat(sender, message, isUser, messageId = null) {
   const chatContainer = document.getElementById('chatMessages');
   
-  // حذف پیام "هیچ پیامی وجود ندارد"
   const noMessages = chatContainer.querySelector('.no-messages');
   if (noMessages) noMessages.remove();
   
@@ -4276,15 +4332,34 @@ function addMessageToChat(sender, message, isUser, messageId = null) {
     messageDiv.id = `msg-${messageId}`;
   }
   
-  messageDiv.style.cssText = `margin: 10px 0; padding: 10px 15px; border-radius: 18px; max-width: 80%; 
-                              word-wrap: break-word; clear: both; font-size: 14px;
+  messageDiv.style.cssText = `margin: 12px 0; padding: 12px 16px; border-radius: 18px; max-width: 85%; 
+                              word-wrap: break-word; clear: both; font-size: 14px; transition: all 0.3s ease;
                               ${isUser ? 
-                                'background: #dcf8c6; margin-left: 20%; float: right; border-bottom-right-radius: 5px;' : 
-                                'background: #ffffff; margin-right: 20%; float: left; border: 1px solid #e0e0e0; border-bottom-left-radius: 5px;'}`;
+                                'background: linear-gradient(135deg, #dcf8c6, #c5e8a4); margin-left: 15%; float: right; border-bottom-right-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);' : 
+                                'background: linear-gradient(135deg, #ffffff, #f8f9fa); margin-right: 15%; float: left; border: 1px solid #e0e0e0; border-bottom-left-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);'}`;
   
-  messageDiv.innerHTML = `<strong style="color: #075E54;">${sender}:</strong><br>${message}`;
+  const avatar = isUser ? '👤' : '🤖';
+  messageDiv.innerHTML = `
+    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+      <span style="font-size: 16px; margin-left: 8px;">${avatar}</span>
+      <strong style="color: ${isUser ? '#075E54' : '#8a2be2'};">${sender}:</strong>
+    </div>
+    <div style="line-height: 1.5;">${message}</div>
+    <small style="display: block; margin-top: 5px; color: #666; text-align: ${isUser ? 'left' : 'right'};">
+      ${new Date().toLocaleTimeString('fa-IR', {hour: '2-digit', minute:'2-digit'})}
+    </small>
+  `;
+  
   chatContainer.appendChild(messageDiv);
   chatContainer.scrollTop = chatContainer.scrollHeight;
+  
+  // افکت ظاهر شدن
+  messageDiv.style.opacity = '0';
+  messageDiv.style.transform = 'translateY(20px)';
+  setTimeout(() => {
+    messageDiv.style.opacity = '1';
+    messageDiv.style.transform = 'translateY(0)';
+  }, 100);
 }
 
 // ارسال با Enter
