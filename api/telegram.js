@@ -103,7 +103,7 @@ app.post('/api/telegram', async (req, res) => {
 // توابع کمکی
 async function notifyTelegram(token, chatId, message) {
   // متن ساده بدون Markdown
-  const text = `پیام جدید از کاربر:\n\nکاربر: ${message.username} (ID: ${message.userId})\nپیام: ${message.message}\nزمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ: /reply_${message.id}`;
+  const text = `پیام جدید از کاربر:\n\n👤 کاربر: ${message.username} (ID: ${message.userId})\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n🆔 پیام ID: ${message.id}\n\nبرای پاسخ: /reply_${message.id}`;
   
   try {
     console.log('📤 Attempting to send to Telegram...');
