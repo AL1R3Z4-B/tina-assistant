@@ -3966,7 +3966,7 @@
             }
         }
         
-        // توابع پشتیبانی ساده شده با آدرس کامل API
+                // توابع پشتیبانی ساده شده
         let supportUsername = null;
         const API_BASE_URL = 'https://tina-assistant-api.onrender.com';
 
@@ -3986,7 +3986,7 @@
                 return;
             }
 
-            // ثبت نام در سرور با آدرس کامل
+            // ثبت نام در سرور
             fetch(`${API_BASE_URL}/api/users?action=register&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`)
                 .then(response => {
                     if (!response.ok) {
@@ -4012,13 +4012,13 @@
         function supportLogin() {
             const username = document.getElementById('supportUsername').value.trim();
             const password = document.getElementById('supportPassword').value.trim();
-
+        
             if (!username || !password) {
                 alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
                 return;
             }
 
-            // ورود به سرور با آدرس کامل
+            // ورود به سرور
             fetch(`${API_BASE_URL}/api/users?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`)
                 .then(response => {
                     if (!response.ok) {
@@ -4110,21 +4110,96 @@
                     .catch(error => console.error('خطا در دریافت پاسخ:', error));
             }, 3000);
         }
-    
+
+        // تابع اضافه کردن پیام به چت
+        function addSupportMessage(sender, message, isUser) {
+            const chatContainer = document.getElementById('supportChatContainer');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isUser ? 'user-message' : 'bot-message');
+
+            const time = new Date().toLocaleTimeString('fa-IR');
+            messageElement.innerHTML = `${message}<div class="message-time">${time} - ${sender}</div>`;
+
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // توابع نمایش/پنهان کردن فرم‌ها
+        function showSupportRegister() {
+            document.getElementById('supportRegisterSection').style.display = 'block';
+            document.getElementById('supportLoginSection').style.display = 'none';
+        }
+
+        function backToLogin() {
+            document.getElementById('supportRegisterSection').style.display = 'none';
+            document.getElementById('supportLoginSection').style.display = 'flex';
+        }
+
+        function supportLogout() {
+            supportUsername = null;
+            document.getElementById('supportChatSection').style.display = 'none';
+            document.getElementById('supportLoginSection').style.display = 'flex';
+            document.getElementById('supportChatContainer').innerHTML = `
+                <div class="message bot-message">
+                    🌟 به بخش پشتیبانی خوش آمدید!
+                    <div class="message-time">هم اکنون</div>
+                </div>
+            `;
+        }
+
+        // تابع برای نمایش صفحه پشتیبانی
+        function showPage(pageId) {
+            // مخفی کردن همه صفحات
+            const pages = [
+                'chatContainer', 'pricesPage', 'mapPage', 'settingsPage', 
+                'aboutPage', 'shopPage', 'questsPage', 'gamePage', 
+                'miniGamesPage', 'supportPage'
+            ];
+
+            pages.forEach(page => {
+                document.getElementById(page).style.display = 'none';
+            });
+
+            menu.classList.remove('show');
+            document.querySelector('.suggestion-chips').style.display = pageId === 'home' ? 'flex' : 'none';
+            document.querySelector('.input-container').style.display = pageId === 'home' ? 'flex' : 'none';
+
+            if (pageId === 'home') {
+                document.getElementById('chatContainer').style.display = 'flex';
+            } else {
+                const pageElement = document.getElementById(pageId + 'Page');
+                if (pageElement) pageElement.style.display = 'flex';
+            }
+
+            if (pageId === 'support') {
+                document.getElementById('supportLoginSection').style.display = 'flex';
+                document.getElementById('supportChatSection').style.display = 'none';
+                document.getElementById('supportRegisterSection').style.display = 'none';
+        
+                document.getElementById('supportUsername').value = '';
+                document.getElementById('supportPassword').value = '';
+                document.getElementById('registerUsername').value = '';
+                document.getElementById('registerPassword').value = '';
+                document.getElementById('registerConfirmPassword').value = '';
+            }
+        }
+
         userInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
-    
+
         window.onload = function() {
             userInput.focus();
-        
+
             setTimeout(() => {
                 addMessage("امروز می‌تونم در چه موردی بهت کمک کنم؟ از قیمت‌ها گرفته تا مأموریت‌های شهر!", 'bot');
                 saveChatHistory();
             }, 1000);
         };
+        
     </script>
     
         <!-- کدهای اصلی اسکریپت -->
