@@ -84,6 +84,45 @@ app.get('/api/telegram', async (req, res) => {
   }
 });
 
+// API جدید برای مدیریت کاربران پشتیبانی
+app.get('/api/users', async (req, res) => {
+  const { action, username, password } = req.query;
+  
+  try {
+    console.log('👥 Users API Request:', req.query);
+
+    if (action === 'register') {
+      // بررسی اینکه کاربر قبلاً ثبت نام نکرده باشد
+      const users = messageDB.getAllUsers();
+      if (users[username]) {
+        return res.json({ success: false, error: 'این نام کاربری قبلاً ثبت شده است' });
+      }
+
+      // ثبت کاربر جدید
+      const result = messageDB.createUser(username, password);
+      if (result.success) {
+        return res.json({ success: true });
+      } else {
+        return res.json({ success: false, error: result.error });
+      }
+    }
+
+    if (action === 'login') {
+      const result = messageDB.loginUser(username, password);
+      return res.json(result);
+    }
+
+    res.json({ 
+      message: 'Users API - Use specific actions',
+      available_actions: ['register', 'login']
+    });
+
+  } catch (error) {
+    console.error('❌ Users API Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Webhook برای تلگرام
 app.post('/api/telegram', async (req, res) => {
   try {
@@ -103,7 +142,7 @@ app.post('/api/telegram', async (req, res) => {
 // توابع کمکی
 async function notifyTelegram(token, chatId, message) {
   // متن ساده بدون Markdown
-  const text = `پیام جدید از کاربر:\n\n👤 کاربر: ${message.username} (ID: ${message.userId})\n📝 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n🆔 پیام ID: ${message.id}\n\nبرای پاسخ: /reply_${message.id}`;
+  const text = `پیام جدید از کاربر:\n\nکاربر: ${message.username} (ID: ${message.userId})\nپیام: ${message.message}\nزمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ: /reply_${message.id}`;
   
   try {
     console.log('📤 Attempting to send to Telegram...');
@@ -114,7 +153,6 @@ async function notifyTelegram(token, chatId, message) {
       body: JSON.stringify({ 
         chat_id: chatId, 
         text: text
-        // parse_mode حذف شد
       })
     });
     
@@ -197,7 +235,6 @@ async function sendTelegramMessage(token, chatId, text) {
       body: JSON.stringify({
         chat_id: chatId,
         text: text
-        // parse_mode حذف شد
       })
     });
     return await response.json();
