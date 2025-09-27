@@ -84,7 +84,7 @@ app.get('/api/telegram', async (req, res) => {
   }
 });
 
-// API جدید برای مدیریت کاربران پشتیبانی
+// API برای مدیریت کاربران پشتیبانی
 app.get('/api/users', async (req, res) => {
   const { action, username, password } = req.query;
   
@@ -92,19 +92,8 @@ app.get('/api/users', async (req, res) => {
     console.log('👥 Users API Request:', req.query);
 
     if (action === 'register') {
-      // بررسی اینکه کاربر قبلاً ثبت نام نکرده باشد
-      const users = messageDB.getAllUsers();
-      if (users[username]) {
-        return res.json({ success: false, error: 'این نام کاربری قبلاً ثبت شده است' });
-      }
-
-      // ثبت کاربر جدید
       const result = messageDB.createUser(username, password);
-      if (result.success) {
-        return res.json({ success: true });
-      } else {
-        return res.json({ success: false, error: result.error });
-      }
+      return res.json(result);
     }
 
     if (action === 'login') {
@@ -141,7 +130,6 @@ app.post('/api/telegram', async (req, res) => {
 
 // توابع کمکی
 async function notifyTelegram(token, chatId, message) {
-  // متن ساده بدون Markdown
   const text = `پیام جدید از کاربر:\n\nکاربر: ${message.username} (ID: ${message.userId})\nپیام: ${message.message}\nزمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ: /reply_${message.id}`;
   
   try {
