@@ -3965,57 +3965,97 @@
                 location.reload();
             }
         }
+        
+                // توابع پشتیبانی پیشرفته - ارتباط با تلگرام
+        let supportUserId = null;
+        let supportUsername = null;
+        let supportCheckInterval = null;
+
+        // تابع مقداردهی اولیه صفحه پشتیبانی
+        function initializeSupportPage() {
+            // تولید یک شناسه کاربری تصادفی اگر وجود ندارد
+            if (!localStorage.getItem('supportUserId')) {
+                supportUserId = Math.floor(Math.random() * 1000000);
+                localStorage.setItem('supportUserId', supportUserId);
+            } else {
+                supportUserId = localStorage.getItem('supportUserId');
+            }
     
-        // توابع پشتیبانی
-        function showSupportRegister() {
-            document.getElementById('supportRegisterSection').style.display = 'block';
+            // تنظیم نام کاربری
+            supportUsername = 'کاربر_' + supportUserId;
         }
 
-        function hideSupportRegister() {
-            document.getElementById('supportRegisterSection').style.display = 'none';
-        }
-
+        // تابع ورود به سیستم پشتیبانی
         function supportLogin() {
             const username = document.getElementById('supportUsername').value.trim();
             const password = document.getElementById('supportPassword').value.trim();
 
             if (username && password) {
-                document.getElementById('supportLoginSection').style.display = 'none';
-                document.getElementById('supportChatSection').style.display = 'flex';
-            
-                // اضافه کردن پیام خوش آمدگویی
-                addSupportMessage('سیستم', '✅ وارد سیستم شدید! اکنون می‌توانید با پشتیبانی چت کنید.', false);
+                // فراخوانی API برای ورود
+                fetch(`/api/telegram?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('supportLoginSection').style.display = 'none';
+                            document.getElementById('supportChatSection').style.display = 'flex';
+                    
+                            supportUserId = data.user.id;
+                            supportUsername = username;
+                    
+                            // اضافه کردن پیام خوش آمدگویی
+                            addSupportMessage('سیستم', '✅ وارد سیستم شدید! اکنون می‌توانید با پشتیبانی چت کنید.', false);
+                    
+                            // شروع چک کردن پاسخ‌ها
+                            startCheckingReplies();
+                        } else {
+                            showSupportMessage('خطا در ورود: ' + data.error, true);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('خطا در ورود:', error);
+                        showSupportMessage('خطا در ارتباط با سرور', true);
+                    });
             } else {
                 showSupportMessage('لطفاً نام کاربری و رمز عبور را وارد کنید', true);
             }
         }
 
+        // تابع ثبت نام در سیستم پشتیبانی
         function supportRegister() {
-            const username = document.getElementById('supportUsername').value.trim();
-            const password = document.getElementById('supportPassword').value.trim();
-            const confirmPassword = document.getElementById('supportConfirmPassword').value.trim();
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
 
-            if (password === confirmPassword && username && password) {
-                showSupportMessage('ثبت نام موفقیت آمیز بود! اکنون وارد شوید.');
-                setTimeout(hideSupportRegister, 2000);
+            if (password !== confirmPassword) {
+                showSupportMessage('رمز عبور و تکرار آن مطابقت ندارند', true);
+                return;
+            }
+
+            if (username && password) {
+                // فراخوانی API برای ثبت نام
+                fetch(`/api/telegram?action=register&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showSupportMessage('ثبت نام موفقیت آمیز بود! اکنون وارد شوید.');
+                            setTimeout(() => {
+                                document.getElementById('supportRegisterSection').style.display = 'none';
+                                document.getElementById('supportLoginSection').style.display = 'flex';
+                            }, 2000);
+                        } else {
+                            showSupportMessage('خطا در ثبت نام: ' + data.error, true);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('خطا در ثبت نام:', error);
+                        showSupportMessage('خطا در ارتباط با سرور', true);
+                    });
             } else {
                 showSupportMessage('لطفاً اطلاعات را به درستی وارد کنید', true);
             }
         }
 
-        function showSupportMessage(text, isError = false) {
-            const messageDiv = document.getElementById('supportMessage');
-            messageDiv.style.display = 'block';
-            messageDiv.style.background = isError ? '#ffebee' : '#e8f5e8';
-            messageDiv.style.color = isError ? '#c62828' : '#2e7d32';
-            messageDiv.innerHTML = isError ? '❌ ' + text : '✅ ' + text;
-        
-            // پنهان کردن پیام بعد از 5 ثانیه
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
-        }
-
+        // تابع ارسال پیام به پشتیبانی
         function sendSupportMessage(predefinedMessage = null) {
             const messageInput = document.getElementById('supportChatInput');
             const message = predefinedMessage || messageInput.value.trim();
@@ -4024,39 +4064,128 @@
             if (message) {
                 // اضافه کردن پیام کاربر به چت
                 addSupportMessage('شما', message, true);
-    
+
                 if (!predefinedMessage) {
                     messageInput.value = '';
                 }
 
-                // شبیه‌سازی پاسخ پشتیبانی
-                setTimeout(() => {
-                    const responses = [
-                        "سلام! چطور می‌تونم کمکتون کنم؟",
-                        "مشکلتون رو دقیق‌تر شرح بدید تا بتونم کمک کنم.",
-                        "متوجه شدم، لطفاً کمی صبر کنید...",
-                        "این مشکل رو بررسی می‌کنم و بهتون اطلاع می‌دم."
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addSupportMessage('پشتیبانی', randomResponse, false);
-                }, 2000);
+                // ارسال پیام به سرور (تلگرام)
+                fetch(`/api/telegram?action=send_message&userid=${supportUserId}&username=${encodeURIComponent(supportUsername)}&message=${encodeURIComponent(message)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'sent') {
+                            console.log('پیام با موفقیت ارسال شد:', data);
+                        } else {
+                            console.error('خطا در ارسال پیام:', data);
+                            addSupportMessage('سیستم', '❌ خطا در ارسال پیام. لطفاً دوباره تلاش کنید.', false);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('خطا در ارسال پیام:', error);
+                        addSupportMessage('سیستم', '❌ خطا در ارتباط با سرور.', false);
+                    });
 
                 // اسکرول به پایین
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         }
 
+        // تابع شروع چک کردن پاسخ‌ها
+        function startCheckingReplies() {
+            // توقف اینتروال قبلی اگر وجود دارد
+            if (supportCheckInterval) {
+                clearInterval(supportCheckInterval);
+            }
+    
+            // چک کردن هر 5 ثانیه
+            supportCheckInterval = setInterval(checkForReplies, 5000);
+        }
+
+        // تابع چک کردن پاسخ‌های جدید
+        function checkForReplies() {
+            if (!supportUserId) return;
+    
+            fetch(`/api/telegram?action=check_replies&userid=${supportUserId}`)
+                .then(response => response.json())
+                .then(replies => {
+                    if (Array.isArray(replies) && replies.length > 0) {
+                        // نمایش پاسخ‌های جدید
+                        replies.forEach(reply => {
+                            // بررسی نکرده بودن پاسخ
+                            if (!reply.displayed) {
+                                addSupportMessage('پشتیبانی', reply.reply, false);
+                                // علامت گذاری به عنوان نمایش داده شده
+                                reply.displayed = true;
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('خطا در دریافت پاسخ‌ها:', error);
+                });
+        }
+
+        // تابع اضافه کردن پیام به چت پشتیبانی
         function addSupportMessage(sender, message, isUser) {
             const chatContainer = document.getElementById('supportChatContainer');
             const messageElement = document.createElement('div');
             messageElement.classList.add('message');
             messageElement.classList.add(isUser ? 'user-message' : 'bot-message');
-        
+
             const time = new Date().toLocaleTimeString('fa-IR');
             messageElement.innerHTML = `${message}<div class="message-time">${time} - ${sender}</div>`;
-        
+
             chatContainer.appendChild(messageElement);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // تابع نمایش پیام در سیستم پشتیبانی
+        function showSupportMessage(text, isError = false) {
+            const messageDiv = document.getElementById('supportMessage');
+            messageDiv.style.display = 'block';
+            messageDiv.style.background = isError ? '#ffebee' : '#e8f5e8';
+            messageDiv.style.color = isError ? '#c62828' : '#2e7d32';
+            messageDiv.innerHTML = isError ? '❌ ' + text : '✅ ' + text;
+
+            // پنهان کردن پیام بعد از 5 ثانیه
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // تابع نمایش فرم ثبت نام
+        function showSupportRegister() {
+            document.getElementById('supportRegisterSection').style.display = 'block';
+            document.getElementById('supportLoginSection').style.display = 'none';
+        }
+
+        // تابع بازگشت به فرم ورود
+        function backToLogin() {
+            document.getElementById('supportRegisterSection').style.display = 'none';
+            document.getElementById('supportLoginSection').style.display = 'flex';
+        }
+
+        // تابع خروج از سیستم پشتیبانی
+        function supportLogout() {
+            if (supportCheckInterval) {
+                clearInterval(supportCheckInterval);
+                supportCheckInterval = null;
+            }
+    
+            supportUserId = null;
+            supportUsername = null;
+    
+            document.getElementById('supportChatSection').style.display = 'none';
+            document.getElementById('supportLoginSection').style.display = 'flex';
+    
+            // پاک کردن تاریخچه چت
+            document.getElementById('supportChatContainer').innerHTML = `
+                <div class="message bot-message">
+                    🌟 به بخش پشتیبانی خوش آمدید! 
+                    <br>من تینا هستم و اینجا می‌توانید مستقیماً با پشتیبان‌های شهر کانیلا در ارتباط باشید.
+                    <div class="message-time">هم اکنون</div>
+                </div>
+            `;
         }
 
         // تابع برای نمایش صفحه پشتیبانی
@@ -4090,16 +4219,19 @@
 
             // مقداردهی اولیه برای صفحه پشتیبانی
             if (pageId === 'support') {
+                initializeSupportPage();
                 // بازنشانی فرم لاگین هنگام نمایش صفحه پشتیبانی
                 document.getElementById('supportLoginSection').style.display = 'flex';
                 document.getElementById('supportChatSection').style.display = 'none';
                 document.getElementById('supportRegisterSection').style.display = 'none';
                 document.getElementById('supportMessage').style.display = 'none';
-            
+    
                 // پاک کردن فیلدها
                 document.getElementById('supportUsername').value = '';
                 document.getElementById('supportPassword').value = '';
-                document.getElementById('supportConfirmPassword').value = '';
+                document.getElementById('registerUsername').value = '';
+                document.getElementById('registerPassword').value = '';
+                document.getElementById('registerConfirmPassword').value = '';
             }
         }
     
@@ -4160,6 +4292,14 @@
         <div class="support-section">
             <!-- بخش چت پشتیبانی (پس از لاگین) -->
             <div id="supportChatSection" style="display: none; height: 100%; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: #f5f5f5;">
+                    <span>💬 چت با پشتیبانی</span>
+                    <button onclick="supportLogout()" class="back-btn" style="padding: 5px 10px; font-size: 12px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        خروج
+                    </button>
+                </div>
+            
                 <div class="chat-container" id="supportChatContainer">
                     <div class="message bot-message">
                         🌟 به بخش پشتیبانی خوش آمدید! 
@@ -4175,7 +4315,7 @@
                 </div>
 
                 <div class="input-container">
-                    <input type="text" id="supportChatInput" placeholder="پیام خود را برای پشتیبانی بنویسید...">
+                    <input type="text" id="supportChatInput" placeholder="پیام خود را برای پشتیبانی بنویسید..." onkeypress="if(event.key === 'Enter') sendSupportMessage()">
                     <button onclick="sendSupportMessage()">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -4186,31 +4326,42 @@
             <div id="supportLoginSection">
                 <div>
                     <h3 style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">🔐 ورود به پشتیبانی</h3>
-            
+        
                     <input type="text" id="supportUsername" placeholder="📧 نام کاربری">
-                
-                    <input type="password" id="supportPassword" placeholder="🔒 رمز عبور">
             
-                    <button onclick="supportLogin()" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+                    <input type="password" id="supportPassword" placeholder="🔒 رمز عبور" onkeypress="if(event.key === 'Enter') supportLogin()">
+        
+                    <button onclick="supportLogin()" style="width: 100%; margin: 10px 0; padding: 12px; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white; border: none; border-radius: 5px; cursor: pointer;">
                         ✅ ورود به سیستم
                     </button>
-            
-                    <button onclick="showSupportRegister()" style="background: #6c757d;">
+        
+                    <button onclick="showSupportRegister()" style="width: 100%; margin: 10px 0; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">
                         📝 ثبت نام جدید
                     </button>
+        
+                    <div id="supportMessage" style="margin-top: 15px; padding: 10px; border-radius: 5px; display: none;"></div>
+                </div>
+            </div>
+
+            <!-- بخش ثبت نام -->
+            <div id="supportRegisterSection" style="display: none;">
+                <div>
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">📝 ثبت نام جدید</h3>
+        
+                    <input type="text" id="registerUsername" placeholder="📧 نام کاربری">
             
-                    <div id="supportRegisterSection" style="display: none; margin-top: 15px;">
-                        <input type="password" id="supportConfirmPassword" placeholder="🔒 تکرار رمز عبور">
-                    
-                        <button onclick="supportRegister()" style="background: #28a745;">
-                            📝 ثبت نام
-                        </button>
-                
-                        <button onclick="hideSupportRegister()" style="background: #ccc; color: #333;">
-                            ↩️ بازگشت
-                        </button>
-                    </div>
+                    <input type="password" id="registerPassword" placeholder="🔒 رمز عبور">
             
+                    <input type="password" id="registerConfirmPassword" placeholder="🔒 تکرار رمز عبور" onkeypress="if(event.key === 'Enter') supportRegister()">
+        
+                    <button onclick="supportRegister()" style="width: 100%; margin: 10px 0; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        📝 ثبت نام
+                    </button>
+        
+                    <button onclick="backToLogin()" style="width: 100%; margin: 10px 0; padding: 12px; background: #ccc; color: #333; border: none; border-radius: 5px; cursor: pointer;">
+                        ↩️ بازگشت به ورود
+                    </button>
+        
                     <div id="supportMessage" style="margin-top: 15px; padding: 10px; border-radius: 5px; display: none;"></div>
                 </div>
             </div>
