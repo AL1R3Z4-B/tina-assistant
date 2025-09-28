@@ -2,21 +2,61 @@
   "name": "تینا - دستیار شهر کانیلا",
   "short_name": "تینا",
   "description": "دستیار مجازی شهر کانیلا در ماینکرافت",
-  "start_url": "/tina-assistant/Tina2.html",
+  "start_url": "/tina-assistant/",
   "display": "standalone",
-  "background_color": "#6a11cb",
+  "background_color": "#8a2be2",
   "theme_color": "#8a2be2",
   "orientation": "portrait",
+  "categories": ["entertainment", "games"],
   "icons": [
     {
-      "src": "https://s6.uupload.ir/files/img_20250821_020025_605_7pey.jpg",
-      "sizes": "192x192",
-      "type": "image/jpeg"
+      "src": "/tina-assistant/images/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://s6.uupload.ir/files/img_20250821_020025_605_7pey.jpg",
+      "src": "/tina-assistant/images/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/tina-assistant/images/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/tina-assistant/images/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/tina-assistant/images/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/tina-assistant/images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/tina-assistant/images/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "/tina-assistant/images/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/tina-assistant/images/screenshot-1.png",
+      "sizes": "640x320",
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }
