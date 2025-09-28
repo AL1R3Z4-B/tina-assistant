@@ -89,9 +89,12 @@ module.exports = {
   },
 
   addMessage: (userId, username, message) => {
+    // تبدیل userId به string برای اطمینان از تطابق
+    const userStr = userId.toString();
+    
     const newMessage = {
       id: ++database.lastMessageId,
-      userId: parseInt(userId),
+      userId: userStr,
       username: username,
       message: message,
       timestamp: new Date().toISOString(),
@@ -118,7 +121,24 @@ module.exports = {
   },
 
   getUserReplies: (userId) => {
-    return database.messages.filter(msg => msg.userId === parseInt(userId) && msg.replied);
+    // تبدیل userId به string برای اطمینان از تطابق
+    const userStr = userId.toString();
+    const userReplies = database.messages.filter(msg => 
+      msg.userId === userStr && msg.replied && msg.reply
+    );
+    
+    console.log(`🔍 جستجوی پاسخ‌ها برای کاربر: ${userStr}`);
+    console.log(`📨 تعداد پاسخ‌های یافت شده: ${userReplies.length}`);
+    
+    return userReplies.map(msg => ({
+      id: msg.id,
+      reply: msg.reply,
+      timestamp: msg.replyTimestamp
+    }));
+  },
+
+  getAllMessages: () => {
+    return database.messages;
   },
 
   getUnrepliedMessages: () => {
