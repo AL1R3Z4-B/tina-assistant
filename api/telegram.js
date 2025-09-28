@@ -130,7 +130,7 @@ app.post('/api/telegram', async (req, res) => {
 
 // توابع کمکی
 async function notifyTelegram(token, chatId, message) {
-  const text = `پیام جدید از کاربر:\n\nکاربر: ${message.username} (ID: ${message.userId})\nپیام: ${message.message}\nزمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ: /reply_${message.id}`;
+  const text = `پیام جدید از کاربر:\n\n👤 کاربر: ${message.username} (ID: ${message.userId})\n💬 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ:\n/reply_${message.id} متن پاسخ شما`;
   
   try {
     console.log('📤 Attempting to send to Telegram...');
@@ -174,20 +174,31 @@ async function processTelegramMessage(update, token, adminChatId) {
       const msgId = parts[0].replace('/reply_', '');
       const replyText = parts.slice(1).join(' ');
       
-      const success = messageDB.addReply(msgId, replyText);
-      await sendTelegramMessage(token, chatId, success ? 
-        '✅ پاسخ با موفقیت ارسال شد' : 
-        '❌ پیام مورد نظر یافت نشد'
-      );
+      const success = messageDB.addReply(parseInt(msgId), replyText);
+      if (success) {
+        await sendTelegramMessage(token, chatId, '✅ پاسخ با موفقیت ارسال شد');
+        
+        // پیدا کردن پیام اصلی برای اطلاع از کاربر
+        const messages = messageDB.getAllMessages();
+        const originalMessage = messages.find(msg => msg.id === parseInt(msgId));
+        if (originalMessage) {
+          console.log(`📨 پاسخ برای کاربر ${originalMessage.username} (ID: ${originalMessage.userId}) ارسال شد`);
+        }
+      } else {
+        await sendTelegramMessage(token, chatId, '❌ پیام مورد نظر یافت نشد');
+      }
+    } else {
+      await sendTelegramMessage(token, chatId, '❌ فرمت دستور نادرست است\n\nاستفاده صحیح:\n/reply_123 متن پاسخ شما');
     }
   }
   else if (text === '/users') {
     const users = messageDB.getAllUsers();
-    let response = `کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
+    let response = `👥 کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
     
     Object.entries(users).forEach(([username, user]) => {
-      response += `${username} (ID: ${user.id})\n`;
-      response += `عضویت: ${new Date(user.createdAt).toLocaleString('fa-IR')}\n`;
+      response += `👤 ${username} (ID: ${user.id})\n`;
+      response += `📅 عضویت: ${new Date(user.createdAt).toLocaleString('fa-IR')}\n`;
+      response += `🕒 آخرین ورود: ${new Date(user.lastLogin).toLocaleString('fa-IR')}\n`;
       response += `────────────\n`;
     });
     
@@ -195,21 +206,30 @@ async function processTelegramMessage(update, token, adminChatId) {
   }
   else if (text === '/stats') {
     const stats = messageDB.getStats();
-    const response = `آمار سیستم:\n\n` +
-      `کاربران کل: ${stats.totalUsers}\n` +
-      `پیام‌های کل: ${stats.totalMessages}\n` +
-      `پیام‌های خوانده نشده: ${stats.unreadMessages}\n` +
-      `کاربران فعال: ${stats.activeUsers}`;
+    const response = `📊 آمار سیستم:\n\n` +
+      `👥 کاربران کل: ${stats.totalUsers}\n` +
+      `💬 پیام‌های کل: ${stats.totalMessages}\n` +
+      `📩 پیام‌های خوانده نشده: ${stats.unreadMessages}\n` +
+      `🟢 کاربران فعال: ${stats.activeUsers}`;
     
     await sendTelegramMessage(token, chatId, response);
   }
   else if (text === '/start') {
-    const helpText = `ربات پشتیبانی تینا\n\n` +
-      `دستورات قابل استفاده:\n` +
+    const helpText = `🤖 ربات پشتیبانی تینا\n\n` +
+      `🎯 دستورات قابل استفاده:\n` +
       `/users - مشاهده کاربران\n` +
       `/stats - آمار سیستم\n` +
       `/reply_123 متن - پاسخ به پیام\n` +
-      `\nوب‌سایت: https://al1r3z4-b.github.io/tina-assistant/`;
+      `\n📱 وب‌سایت: https://al1r3z4-b.github.io/tina-assistant/`;
+    
+    await sendTelegramMessage(token, chatId, helpText);
+  }
+  else if (text === '/help') {
+    const helpText = `📖 راهنمای دستورات:\n\n` +
+      `🔹 /users - مشاهده لیست کاربران ثبت‌نام شده\n` +
+      `🔹 /stats - مشاهده آمار سیستم\n` +
+      `🔹 /reply_123 متن پاسخ - ارسال پاسخ به پیام کاربر\n` +
+      `\nمثال:\n/reply_123 سلام! مشکل شما رو بررسی کردم`;
     
     await sendTelegramMessage(token, chatId, helpText);
   }
@@ -232,8 +252,31 @@ async function sendTelegramMessage(token, chatId, text) {
   }
 }
 
+// Route برای بررسی سلامت سرور
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Route برای دریافت تمام پیام‌ها (برای دیباگ)
+app.get('/api/messages', (req, res) => {
+  const messages = messageDB.getAllMessages();
+  res.json(messages);
+});
+
+// Route برای دریافت تمام کاربران (برای دیباگ)
+app.get('/api/all-users', (req, res) => {
+  const users = messageDB.getAllUsers();
+  res.json(users);
+});
+
 // شروع سرور
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Tina Assistant API running on port ${PORT}`);
   console.log(`📍 Health: https://tina-assistant-api.onrender.com/`);
+  console.log(`📍 API: https://tina-assistant-api.onrender.com/api/telegram`);
+  console.log(`📍 Users API: https://tina-assistant-api.onrender.com/api/users`);
 });
