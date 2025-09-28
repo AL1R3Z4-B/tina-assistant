@@ -114,16 +114,11 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// Webhook برای تلگرام
+// Webhook ساده شده - فقط برای تست
 app.post('/api/telegram', async (req, res) => {
   try {
-    console.log('🤖 Telegram webhook received:', req.body);
-    
-    const BOT_TOKEN = process.env.BOT_TOKEN || "6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4";
-    const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || "222666092";
-    
-    await processTelegramMessage(req.body, BOT_TOKEN, ADMIN_CHAT_ID);
-    res.json({ status: 'ok' });
+    console.log('🤖 Telegram webhook received - Ignoring for now');
+    res.json({ status: 'ok', message: 'Webhook disabled' });
   } catch (error) {
     console.error('❌ Webhook error:', error);
     res.status(500).json({ error: error.message });
@@ -156,108 +151,35 @@ async function notifyTelegram(token, chatId, message) {
   }
 }
 
-async function processTelegramMessage(update, token, adminChatId) {
-  if (!update?.message?.text) return;
-
-  const chatId = update.message.chat.id;
-  const text = update.message.text;
-
-  console.log(`🤖 Processing Telegram message from ${chatId}: ${text}`);
-
-  if (chatId.toString() !== adminChatId) {
-    console.log('🚫 Unauthorized access attempt from:', chatId);
-    return;
-  }
-
-  // پردازش دستورات
-  if (text.startsWith('/reply_')) {
-    const parts = text.split(' ');
-    if (parts.length >= 2) {
-      const msgId = parts[0].replace('/reply_', '');
-      const replyText = parts.slice(1).join(' ');
-      
-      console.log(`📨 Attempting to reply to message ${msgId}: ${replyText}`);
-      
-      const success = messageDB.addReply(parseInt(msgId), replyText);
-      if (success) {
-        console.log('✅ Reply saved successfully');
-        await sendTelegramMessage(token, chatId, '✅ پاسخ با موفقیت ارسال شد و ذخیره گردید.');
-        
-        // پیدا کردن پیام اصلی
-        const messages = messageDB.getAllMessages();
-        const originalMessage = messages.find(msg => msg.id === parseInt(msgId));
-        if (originalMessage) {
-          console.log(`📨 پاسخ برای کاربر ${originalMessage.username} (ID: ${originalMessage.userId}) ذخیره شد`);
-        }
-      } else {
-        console.log('❌ Failed to save reply');
-        await sendTelegramMessage(token, chatId, '❌ خطا در ذخیره پاسخ. پیام مورد نظر یافت نشد.');
-      }
-    } else {
-      await sendTelegramMessage(token, chatId, '❌ فرمت دستور نادرست است\n\nاستفاده صحیح:\n/reply_123 متن پاسخ شما');
-    }
-  }
-  else if (text === '/users') {
-    const users = messageDB.getAllUsers();
-    let response = `👥 کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
-    
-    Object.entries(users).forEach(([username, user]) => {
-      response += `👤 ${username} (ID: ${user.id})\n`;
-      response += `📅 عضویت: ${new Date(user.createdAt).toLocaleString('fa-IR')}\n`;
-      response += `🕒 آخرین ورود: ${new Date(user.lastLogin).toLocaleString('fa-IR')}\n`;
-      response += `────────────\n`;
-    });
-    
-    await sendTelegramMessage(token, chatId, response);
-  }
-  else if (text === '/stats') {
-    const stats = messageDB.getStats();
-    const response = `📊 آمار سیستم:\n\n` +
-      `👥 کاربران کل: ${stats.totalUsers}\n` +
-      `💬 پیام‌های کل: ${stats.totalMessages}\n` +
-      `📩 پیام‌های خوانده نشده: ${stats.unreadMessages}\n` +
-      `🟢 کاربران فعال: ${stats.activeUsers}`;
-    
-    await sendTelegramMessage(token, chatId, response);
-  }
-  else if (text === '/start' || text === '/help') {
-    const helpText = `🤖 ربات پشتیبانی تینا\n\n` +
-      `🎯 دستورات قابل استفاده:\n` +
-      `/users - مشاهده کاربران\n` +
-      `/stats - آمار سیستم\n` +
-      `/reply_123 متن - پاسخ به پیام\n` +
-      `\n📱 وب‌سایت: https://al1r3z4-b.github.io/tina-assistant/`;
-    
-    await sendTelegramMessage(token, chatId, helpText);
-  }
-}
-
-async function sendTelegramMessage(token, chatId, text) {
-  try {
-    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: text
-      })
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('❌ Error sending Telegram message:', error);
-    return { error: error.message };
-  }
-}
-
 // Route برای دیباگ
 app.get('/api/debug/messages', (req, res) => {
-  const messages = messageDB.getAllMessages();
-  res.json(messages);
+  try {
+    const messages = messageDB.getAllMessages();
+    res.json(messages);
+  } catch (error) {
+    console.error('❌ Debug error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/api/debug/users', (req, res) => {
-  const users = messageDB.getAllUsers();
-  res.json(users);
+  try {
+    const users = messageDB.getAllUsers();
+    res.json(users);
+  } catch (error) {
+    console.error('❌ Debug error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/debug/database', (req, res) => {
+  try {
+    const database = require('./database.json');
+    res.json(database);
+  } catch (error) {
+    console.error('❌ Database error:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // شروع سرور
