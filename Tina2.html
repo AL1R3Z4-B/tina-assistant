@@ -3969,12 +3969,12 @@
         // توابع پشتیبانی پیشرفته
         let supportUsername = null;
         const API_BASE_URL = 'https://tina-assistant-api.onrender.com';
+        let supportCheckInterval = null;
 
         // تابع بررسی وضعیت ورود
         function checkLoginStatus() {
             const savedUsername = localStorage.getItem('supportUsername');
             if (savedUsername) {
-                // کاربر قبلاً وارد شده
                 supportUsername = savedUsername;
                 document.getElementById('supportLoginSection').style.display = 'none';
                 document.getElementById('supportChatSection').style.display = 'flex';
@@ -4001,14 +4001,8 @@
                 return;
             }
 
-            // ثبت نام در سرور
             fetch(`${API_BASE_URL}/api/users?action=register&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('خطا در ارتباط با سرور');
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         alert('✅ ثبت نام موفقیت آمیز بود! اکنون می‌توانید وارد شوید.');
@@ -4018,8 +4012,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('خطا:', error);
-                    alert('❌ خطا در ارتباط با سرور. لطفاً مطمئن شوید سرور فعال است.');
+                    alert('❌ خطا در ارتباط با سرور');
                 });
         }
 
@@ -4033,17 +4026,10 @@
                 return;
             }
 
-            // ورود به سرور
             fetch(`${API_BASE_URL}/api/users?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('خطا در ارتباط با سرور');
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // ذخیره اطلاعات ورود
                         localStorage.setItem('supportUsername', username);
                         supportUsername = username;
                 
@@ -4052,15 +4038,13 @@
                 
                         addSupportMessage('سیستم', '✅ وارد سیستم شدید! پیام‌های شما به پشتیبانی ارسال می‌شوند.', false);
                 
-                        // شروع چک کردن پاسخ‌ها
                         startCheckingReplies();
                     } else {
                         alert('❌ ' + data.error);
                     }
                 })
                 .catch(error => {
-                    console.error('خطا:', error);
-                    alert('❌ خطا در ارتباط با سرور. لطفاً مطمئن شوید سرور فعال است.');
+                    alert('❌ خطا در ارتباط با سرور');
                 });
         }
 
@@ -4070,40 +4054,63 @@
             const message = predefinedMessage || messageInput.value.trim();
 
             if (message) {
-                // اضافه کردن پیام کاربر به چت
                 addSupportMessage('شما', message, true);
 
                 if (!predefinedMessage) {
                     messageInput.value = '';
                 }
 
-                // ارسال پیام به سرور (تلگرام)
                 if (supportUsername) {
                     fetch(`${API_BASE_URL}/api/telegram?action=send_message&userid=${supportUsername}&username=${encodeURIComponent(supportUsername)}&message=${encodeURIComponent(message)}`)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('خطا در ارسال');
-                            }
-                            return response.json();
-                        })
+                        .then(response => response.json())
                         .then(data => {
-                            if (data.status === 'sent') {
-                                console.log('پیام با موفقیت ارسال شد');
-                                // ذخیره پیام در localStorage برای نمایش بعدی
-                                saveMessageToHistory('شما', message);
-                            } else {
-                                console.log('پیام در صف ارسال قرار گرفت');
-                            }
+                            console.log('پیام ارسال شد:', data);
                         })
                         .catch(error => {
                             console.error('خطا در ارسال:', error);
-                            addSupportMessage('سیستم', '⚠️ پیام ذخیره شد (اتصال اینترنت بررسی شود)', false);
                         });
                 }
 
-                // اسکرول به پایین
                 document.getElementById('supportChatContainer').scrollTop = document.getElementById('supportChatContainer').scrollHeight;
             }
+        }
+
+        // تابع چک کردن پاسخ‌ها (سیستم جدید)
+        function startCheckingReplies() {
+            // بارگذاری تاریخچه چت
+            loadChatHistory();
+    
+            // توقف اینتروال قبلی
+            if (supportCheckInterval) {
+                clearInterval(supportCheckInterval);
+            }
+    
+            // چک کردن هر 3 ثانیه
+            supportCheckInterval = setInterval(checkForNewReplies, 3000);
+        }
+
+        // تابع چک کردن پاسخ‌های جدید
+        function checkForNewReplies() {
+            if (!supportUsername) return;
+    
+            fetch(`${API_BASE_URL}/api/telegram?action=check_replies&userid=${supportUsername}`)
+                .then(response => response.json())
+                .then(replies => {
+                    if (Array.isArray(replies) && replies.length > 0) {
+                        replies.forEach(reply => {
+                            // بررسی اینکه این پاسخ قبلاً نمایش داده نشده
+                            if (!isReplyDisplayed(reply.id)) {
+                                addSupportMessage('پشتیبانی', reply.reply, false);
+                                saveMessageToHistory('پشتیبانی', reply.reply);
+                                markReplyAsDisplayed(reply.id);
+                                console.log('پاسخ جدید دریافت شد:', reply);
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('خطا در دریافت پاسخ:', error);
+                });
         }
 
         // تابع ذخیره پیام در تاریخچه
@@ -4112,7 +4119,8 @@
             chatHistory.push({
                 sender: sender,
                 message: message,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                id: Date.now() // اضافه کردن ID برای هر پیام
             });
             localStorage.setItem('supportChatHistory', JSON.stringify(chatHistory));
         }
@@ -4122,6 +4130,15 @@
             const chatHistory = JSON.parse(localStorage.getItem('supportChatHistory') || '[]');
             const chatContainer = document.getElementById('supportChatContainer');
     
+            // پاک کردن چت فعلی (به جز پیام خوش آمدگویی)
+            chatContainer.innerHTML = `
+                <div class="message bot-message">
+                    🌟 به بخش پشتیبانی خوش آمدید!
+                    <div class="message-time">هم اکنون</div>
+                </div>
+            `;
+    
+            // اضافه کردن تاریخچه چت
             chatHistory.forEach(msg => {
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message');
@@ -4134,38 +4151,6 @@
             });
     
             chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        // تابع چک کردن پاسخ‌ها (بهبود یافته)
-        function startCheckingReplies() {
-            // اول بارگذاری تاریخچه چت
-            loadChatHistory();
-    
-            // سپس شروع چک کردن پاسخ‌های جدید
-            setInterval(() => {
-                if (!supportUsername) return;
-        
-                fetch(`${API_BASE_URL}/api/telegram?action=check_replies&userid=${supportUsername}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('خطا در دریافت');
-                        }
-                        return response.json();
-                    })
-                    .then(replies => {
-                        if (Array.isArray(replies) && replies.length > 0) {
-                            replies.forEach(reply => {
-                                if (!reply.displayed) {
-                                    addSupportMessage('پشتیبانی', reply.reply, false);
-                                    saveMessageToHistory('پشتیبانی', reply.reply);
-                                    // علامت گذاری به عنوان نمایش داده شده در localStorage
-                                    markReplyAsDisplayed(reply.id);
-                                }
-                            });
-                        }
-                    })
-                    .catch(error => console.error('خطا در دریافت پاسخ:', error));
-            }, 3000);
         }
 
         // تابع علامت گذاری پاسخ به عنوان نمایش داده شده
@@ -4195,6 +4180,9 @@
 
             chatContainer.appendChild(messageElement);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+            // ذخیره در تاریخچه
+            saveMessageToHistory(sender, message);
         }
 
         // توابع نمایش/پنهان کردن فرم‌ها
@@ -4209,24 +4197,22 @@
         }
 
         function supportLogout() {
+            // توقف چک کردن
+            if (supportCheckInterval) {
+                clearInterval(supportCheckInterval);
+                supportCheckInterval = null;
+            }
+    
             // حذف اطلاعات از localStorage
             localStorage.removeItem('supportUsername');
-            localStorage.removeItem('supportChatHistory');
     
             supportUsername = null;
             document.getElementById('supportChatSection').style.display = 'none';
             document.getElementById('supportLoginSection').style.display = 'flex';
-            document.getElementById('supportChatContainer').innerHTML = `
-                <div class="message bot-message">
-                    🌟 به بخش پشتیبانی خوش آمدید!
-                    <div class="message-time">هم اکنون</div>
-                </div>
-            `;
         }
 
         // تابع برای نمایش صفحه پشتیبانی
         function showPage(pageId) {
-            // مخفی کردن همه صفحات
             const pages = [
                 'chatContainer', 'pricesPage', 'mapPage', 'settingsPage', 
                 'aboutPage', 'shopPage', 'questsPage', 'gamePage', 
@@ -4249,7 +4235,6 @@
             }
 
             if (pageId === 'support') {
-                // اول بررسی کن اگر کاربر قبلاً وارد شده
                 if (!checkLoginStatus()) {
                     document.getElementById('supportLoginSection').style.display = 'flex';
                     document.getElementById('supportChatSection').style.display = 'none';
