@@ -117,7 +117,7 @@ app.get('/api/users', async (req, res) => {
 // Webhook برای تلگرام - سیستم جدید
 app.post('/api/telegram', async (req, res) => {
   try {
-    console.log('🤖 Telegram webhook received:', JSON.stringify(req.body, null, 2));
+    console.log('🤖 Telegram webhook received');
     
     const BOT_TOKEN = process.env.BOT_TOKEN || "6270825914:AAG-zWoqrIDmsztk2RjDyv68eMhqcAU9Us4";
     const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || "222666092";
@@ -133,7 +133,7 @@ app.post('/api/telegram', async (req, res) => {
 
 // توابع کمکی
 async function notifyTelegram(token, chatId, message) {
-  const text = `📩 پیام جدید از کاربر:\n\n👤 کاربر: ${message.username}\n🆔 آی‌دی: ${message.userId}\n💬 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ:\n/reply_${message.id} متن پاسخ شما`;
+  const text = `📩 پیام جدید از کاربر:\n\n👤 کاربر: ${message.username}\n🆔 آی‌دی: ${message.userId}\n💬 پیام: ${message.message}\n⏰ زمان: ${new Date(message.timestamp).toLocaleString('fa-IR')}\n\nبرای پاسخ به این پیام:\n<code>/reply_${message.id} متن پاسخ</code>\n\nبرای ارسال پیام جدید:\n<code>/send_${message.username} متن پیام</code>`;
   
   try {
     console.log('📤 Attempting to send to Telegram...');
@@ -182,6 +182,9 @@ async function processTelegramMessage(update, token, adminChatId) {
   // پردازش دستورات
   if (text.startsWith('/reply_')) {
     await handleReplyCommand(text, token, chatId);
+  }
+  else if (text.startsWith('/send_')) {
+    await handleSendCommand(text, token, chatId);
   }
   else if (text === '/users') {
     await handleUsersCommand(token, chatId);
@@ -256,18 +259,91 @@ async function handleReplyCommand(text, token, chatId) {
   }
 }
 
+// تابع مدیریت دستور send برای ارسال پیام مستقیم به کاربر
+async function handleSendCommand(text, token, chatId) {
+  const parts = text.split(' ');
+  if (parts.length < 2) {
+    await sendTelegramMessage(token, chatId, 
+      '❌ فرمت دستور نادرست\n\n' +
+      '📝 استفاده صحیح:\n' +
+      '<code>/send_username متن پیام شما</code>\n\n' +
+      'مثال:\n' +
+      '<code>/send_Alireza سلام! چطور میتونم کمک کنم؟</code>'
+    );
+    return;
+  }
+
+  const username = parts[0].replace('/send_', '');
+  const messageText = parts.slice(1).join(' ');
+
+  console.log(`📨 Attempting to send message to user ${username}: "${messageText}"`);
+
+  try {
+    // بررسی وجود کاربر
+    const users = messageDB.getAllUsers();
+    const user = users[username];
+    
+    if (!user) {
+      await sendTelegramMessage(token, chatId, `❌ کاربر "${username}" یافت نشد`);
+      return;
+    }
+
+    // ایجاد یک پیام جدید از طرف پشتیبانی
+    const newMessage = messageDB.addMessage(username, 'پشتیبانی', messageText);
+    
+    // علامت گذاری به عنوان پاسخ داده شده
+    messageDB.addReply(newMessage.id, messageText);
+    
+    console.log(`✅ پیام برای کاربر ${username} ذخیره شد`);
+    
+    await sendTelegramMessage(token, chatId, 
+      `✅ پیام با موفقیت ارسال شد\n\n` +
+      `👤 کاربر: ${username}\n` +
+      `📝 پیام شما: ${messageText}`
+    );
+    
+  } catch (error) {
+    console.error('❌ Error in send command:', error);
+    await sendTelegramMessage(token, chatId, '❌ خطا در ارسال پیام');
+  }
+}
+
 // تابع مدیریت دستور users
 async function handleUsersCommand(token, chatId) {
   const users = messageDB.getAllUsers();
+  const messages = messageDB.getAllMessages();
+  
   let response = `👥 کاربران ثبت‌نام شده (${Object.keys(users).length}):\n\n`;
   
   if (Object.keys(users).length === 0) {
     response = '📭 هیچ کاربری ثبت‌نام نکرده است';
   } else {
     Object.entries(users).forEach(([username, user]) => {
-      response += `👤 <b>${username}</b> (ID: ${user.id})\n`;
+      // شمارش پیام‌های خوانده نشده برای این کاربر
+      const unreadMessages = messages.filter(msg => 
+        msg.userId === username && !msg.replied
+      ).length;
+      
+      // پیدا کردن آخرین پیام
+      const userMessages = messages.filter(msg => msg.userId === username);
+      const lastMessage = userMessages[userMessages.length - 1];
+      
+      response += `👤 <b>${username}</b>\n`;
       response += `📅 عضویت: ${new Date(user.createdAt).toLocaleString('fa-IR')}\n`;
       response += `🕒 آخرین ورود: ${new Date(user.lastLogin).toLocaleString('fa-IR')}\n`;
+      
+      if (lastMessage) {
+        response += `💬 آخرین پیام: ${lastMessage.message.substring(0, 30)}${lastMessage.message.length > 30 ? '...' : ''}\n`;
+        response += `📨 پیام‌های خوانده نشده: <b>${unreadMessages}</b>\n`;
+        
+        if (unreadMessages > 0 && lastMessage) {
+          response += `🔔 برای پاسخ: <code>/reply_${lastMessage.id}</code>\n`;
+        }
+        
+        response += `📩 برای پیام جدید: <code>/send_${username}</code>\n`;
+      } else {
+        response += `📩 برای پیام جدید: <code>/send_${username}</code>\n`;
+      }
       response += `────────────\n`;
     });
   }
@@ -291,11 +367,13 @@ async function handleStatsCommand(token, chatId) {
 async function handleHelpCommand(token, chatId) {
   const helpText = `🤖 ربات پشتیبانی تینا\n\n` +
     `🎯 <b>دستورات قابل استفاده:</b>\n\n` +
-    `👥 <code>/users</code> - مشاهده کاربران\n` +
+    `👥 <code>/users</code> - مشاهده کاربران و پیام‌ها\n` +
     `📊 <code>/stats</code> - آمار سیستم\n` +
-    `💬 <code>/reply_123 متن</code> - پاسخ به پیام\n\n` +
-    `📝 <b>مثال:</b>\n` +
-    `<code>/reply_1 سلام! مشکل شما رو بررسی کردم</code>\n\n` +
+    `💬 <code>/reply_123 متن</code> - پاسخ به پیام خاص\n` +
+    `📩 <code>/send_username متن</code> - ارسال پیام جدید به کاربر\n\n` +
+    `📝 <b>مثال‌ها:</b>\n` +
+    `<code>/reply_1 سلام! مشکل شما رو بررسی کردم</code>\n` +
+    `<code>/send_Alireza چطور میتونم کمک کنم؟</code>\n\n` +
     `📱 <b>وب‌سایت:</b>\n` +
     `https://al1r3z4-b.github.io/tina-assistant/`;
   
