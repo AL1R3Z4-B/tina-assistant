@@ -3966,9 +3966,24 @@
             }
         }
         
-                // توابع پشتیبانی ساده شده
+        // توابع پشتیبانی پیشرفته
         let supportUsername = null;
         const API_BASE_URL = 'https://tina-assistant-api.onrender.com';
+
+        // تابع بررسی وضعیت ورود
+        function checkLoginStatus() {
+            const savedUsername = localStorage.getItem('supportUsername');
+            if (savedUsername) {
+                // کاربر قبلاً وارد شده
+                supportUsername = savedUsername;
+                document.getElementById('supportLoginSection').style.display = 'none';
+                document.getElementById('supportChatSection').style.display = 'flex';
+                addSupportMessage('سیستم', '✅ خوش آمدید! دوباره وارد شدید.', false);
+                startCheckingReplies();
+                return true;
+            }
+            return false;
+        }
 
         // تابع ثبت نام کاربر
         function supportRegister() {
@@ -4012,7 +4027,7 @@
         function supportLogin() {
             const username = document.getElementById('supportUsername').value.trim();
             const password = document.getElementById('supportPassword').value.trim();
-        
+
             if (!username || !password) {
                 alert('لطفاً نام کاربری و رمز عبور را وارد کنید');
                 return;
@@ -4028,10 +4043,12 @@
                 })
                 .then(data => {
                     if (data.success) {
+                        // ذخیره اطلاعات ورود
+                        localStorage.setItem('supportUsername', username);
+                        supportUsername = username;
+                
                         document.getElementById('supportLoginSection').style.display = 'none';
                         document.getElementById('supportChatSection').style.display = 'flex';
-                
-                        supportUsername = username;
                 
                         addSupportMessage('سیستم', '✅ وارد سیستم شدید! پیام‌های شما به پشتیبانی ارسال می‌شوند.', false);
                 
@@ -4070,7 +4087,11 @@
                             return response.json();
                         })
                         .then(data => {
-                            if (data.status !== 'sent') {
+                            if (data.status === 'sent') {
+                                console.log('پیام با موفقیت ارسال شد');
+                                // ذخیره پیام در localStorage برای نمایش بعدی
+                                saveMessageToHistory('شما', message);
+                            } else {
                                 console.log('پیام در صف ارسال قرار گرفت');
                             }
                         })
@@ -4085,8 +4106,42 @@
             }
         }
 
-        // تابع چک کردن پاسخ‌ها
+        // تابع ذخیره پیام در تاریخچه
+        function saveMessageToHistory(sender, message) {
+            const chatHistory = JSON.parse(localStorage.getItem('supportChatHistory') || '[]');
+            chatHistory.push({
+                sender: sender,
+                message: message,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('supportChatHistory', JSON.stringify(chatHistory));
+        }
+
+        // تابع بارگذاری تاریخچه چت
+        function loadChatHistory() {
+            const chatHistory = JSON.parse(localStorage.getItem('supportChatHistory') || '[]');
+            const chatContainer = document.getElementById('supportChatContainer');
+    
+            chatHistory.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(msg.sender === 'شما' ? 'user-message' : 'bot-message');
+
+                const time = new Date(msg.timestamp).toLocaleTimeString('fa-IR');
+                messageElement.innerHTML = `${msg.message}<div class="message-time">${time} - ${msg.sender}</div>`;
+
+                chatContainer.appendChild(messageElement);
+            });
+    
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // تابع چک کردن پاسخ‌ها (بهبود یافته)
         function startCheckingReplies() {
+            // اول بارگذاری تاریخچه چت
+            loadChatHistory();
+    
+            // سپس شروع چک کردن پاسخ‌های جدید
             setInterval(() => {
                 if (!supportUsername) return;
         
@@ -4102,13 +4157,30 @@
                             replies.forEach(reply => {
                                 if (!reply.displayed) {
                                     addSupportMessage('پشتیبانی', reply.reply, false);
-                                    reply.displayed = true;
+                                    saveMessageToHistory('پشتیبانی', reply.reply);
+                                    // علامت گذاری به عنوان نمایش داده شده در localStorage
+                                    markReplyAsDisplayed(reply.id);
                                 }
                             });
                         }
                     })
                     .catch(error => console.error('خطا در دریافت پاسخ:', error));
             }, 3000);
+        }
+
+        // تابع علامت گذاری پاسخ به عنوان نمایش داده شده
+        function markReplyAsDisplayed(replyId) {
+            const displayedReplies = JSON.parse(localStorage.getItem('displayedReplies') || '[]');
+            if (!displayedReplies.includes(replyId)) {
+                displayedReplies.push(replyId);
+                localStorage.setItem('displayedReplies', JSON.stringify(displayedReplies));
+            }
+        }
+
+        // تابع بررسی اینکه آیا پاسخ قبلاً نمایش داده شده
+        function isReplyDisplayed(replyId) {
+            const displayedReplies = JSON.parse(localStorage.getItem('displayedReplies') || '[]');
+            return displayedReplies.includes(replyId);
         }
 
         // تابع اضافه کردن پیام به چت
@@ -4137,6 +4209,10 @@
         }
 
         function supportLogout() {
+            // حذف اطلاعات از localStorage
+            localStorage.removeItem('supportUsername');
+            localStorage.removeItem('supportChatHistory');
+    
             supportUsername = null;
             document.getElementById('supportChatSection').style.display = 'none';
             document.getElementById('supportLoginSection').style.display = 'flex';
@@ -4173,15 +4249,18 @@
             }
 
             if (pageId === 'support') {
-                document.getElementById('supportLoginSection').style.display = 'flex';
-                document.getElementById('supportChatSection').style.display = 'none';
-                document.getElementById('supportRegisterSection').style.display = 'none';
-        
-                document.getElementById('supportUsername').value = '';
-                document.getElementById('supportPassword').value = '';
-                document.getElementById('registerUsername').value = '';
-                document.getElementById('registerPassword').value = '';
-                document.getElementById('registerConfirmPassword').value = '';
+                // اول بررسی کن اگر کاربر قبلاً وارد شده
+                if (!checkLoginStatus()) {
+                    document.getElementById('supportLoginSection').style.display = 'flex';
+                    document.getElementById('supportChatSection').style.display = 'none';
+                    document.getElementById('supportRegisterSection').style.display = 'none';
+            
+                    document.getElementById('supportUsername').value = '';
+                    document.getElementById('supportPassword').value = '';
+                    document.getElementById('registerUsername').value = '';
+                    document.getElementById('registerPassword').value = '';
+                    document.getElementById('registerConfirmPassword').value = '';
+                }
             }
         }
 
