@@ -1,62 +1,124 @@
-const CACHE_NAME = 'tina-cache-v2';
-const urlsToCache = [
-  '/tina-assistant/',
-  '/tina-assistant/Tina2.html',
-  '/tina-assistant/manifest.json',
-  '/tina-assistant/sw.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://s6.uupload.ir/files/img_20250821_020025_605_7pey.jpg'
-];
+// Service Worker برای Push Notification
+const CACHE_NAME = 'tina-assistant-v2';
 
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        return cache.addAll(urlsToCache);
-      })
-  );
+// نصب Service Worker
+self.addEventListener('install', (event) => {
+  console.log('✅ Service Worker installed');
+  self.skipWaiting();
 });
 
-self.addEventListener('fetch', function(event) {
-  event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        // اگر فایل در کش وجود دارد، آن را برگردان
-        if (response) {
-          return response;
+// فعال‌سازی Service Worker
+self.addEventListener('activate', (event) => {
+  console.log('✅ Service Worker activated');
+  event.waitUntil(self.clients.claim());
+});
+
+// مدیریت Push Notification
+self.addEventListener('push', (event) => {
+  console.log('📩 Push event received', event);
+  
+  if (!event.data) {
+    console.log('📭 No push data');
+    return;
+  }
+
+  try {
+    const data = event.data.json();
+    console.log('📨 Push data:', data);
+    
+    const options = {
+      body: data.body || 'پیام جدید از پشتیبانی',
+      icon: '/tina-assistant/images/icon-192x192.png',
+      badge: '/tina-assistant/images/icon-72x72.png',
+      image: '/tina-assistant/images/icon-512x512.png',
+      vibrate: [200, 100, 200, 100, 200],
+      tag: 'tina-support',
+      renotify: true,
+      requireInteraction: true,
+      data: {
+        url: data.url || '/tina-assistant/',
+        action: 'support'
+      },
+      actions: [
+        {
+          action: 'open',
+          title: '📩 مشاهده پیام'
+        },
+        {
+          action: 'close',
+          title: '❌ بستن'
+        }
+      ]
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(data.title || 'تینا - پیام جدید', options)
+        .then(() => console.log('✅ Notification shown'))
+        .catch(err => console.error('❌ Notification error:', err))
+    );
+  } catch (error) {
+    console.error('❌ Push data parsing error:', error);
+    
+    // نمایش نوتیفیکیشن پیش‌فرض
+    const options = {
+      body: 'پیام جدید از پشتیبانی تینا',
+      icon: '/tina-assistant/images/icon-192x192.png',
+      tag: 'tina-support',
+      requireInteraction: true
+    };
+    
+    event.waitUntil(
+      self.registration.showNotification('تینا - پیام جدید 📩', options)
+    );
+  }
+});
+
+// مدیریت کلیک روی نوتیفیکیشن
+self.addEventListener('notificationclick', (event) => {
+  console.log('🖱️ Notification clicked', event);
+  
+  event.notification.close();
+
+  if (event.action === 'open' || !event.action) {
+    event.waitUntil(
+      clients.matchAll({ 
+        type: 'window',
+        includeUncontrolled: true
+      }).then((clientList) => {
+        console.log('🔍 Found clients:', clientList.length);
+        
+        // اگر تب باز هست، فوکوس کن
+        for (const client of clientList) {
+          if (client.url.includes('tina-assistant') && 'focus' in client) {
+            console.log('🎯 Focusing existing client');
+            
+            // ارسال پیام به تب باز برای رفتن به پشتیبانی
+            if (client.postMessage) {
+              client.postMessage({
+                type: 'SHOW_SUPPORT',
+                data: { force: true }
+              });
+            }
+            
+            return client.focus();
+          }
         }
         
-        // در غیر این صورت از شبکه fetch کن
-        return fetch(event.request).then(function(response) {
-          // پاسخ را بررسی کن و در صورت نیاز cache کن
-          if(!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          
-          var responseToCache = response.clone();
-          
-          caches.open(CACHE_NAME)
-            .then(function(cache) {
-              cache.put(event.request, responseToCache);
-            });
-          
-          return response;
-        });
+        // اگر تب باز نیست، تب جدید باز کن
+        if (clients.openWindow) {
+          console.log('🚀 Opening new window');
+          return clients.openWindow('/tina-assistant/');
+        }
       })
-  );
+    );
+  }
 });
 
-// پاک کردن کش‌های قدیمی
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+// دریافت پیام از صفحه اصلی
+self.addEventListener('message', (event) => {
+  console.log('📨 Message received in SW:', event.data);
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
